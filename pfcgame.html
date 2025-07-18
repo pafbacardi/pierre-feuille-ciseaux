@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pierre-Feuille-Ciseaux</title>
+    <!-- Favicon: Emoji Pierre (✊) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✊</text></svg>">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Patrick Hand for a childlike feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+        /* Styles personnalisés pour l'ambiance pastel et la typographie */
+        body {
+            font-family: 'Patrick Hand', cursive;
+            background: linear-gradient(135deg, #f0f9ff, #cbe8f9); /* Dégradé de fond pastel */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+            padding: 1rem; /* Ajout d'un padding global pour éviter que le contenu ne colle aux bords */
+            box-sizing: border-box; /* S'assurer que le padding est inclus dans la taille */
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 2rem; /* Coins très arrondis */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            max-width: 90%;
+            width: 500px; /* Largeur fixe pour les écrans plus grands */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-sizing: border-box; /* Inclure padding et border dans la largeur/hauteur */
+        }
+
+        /* Ajustement de la largeur du conteneur pour les très petits écrans */
+        @media (max-width: 640px) { /* Applique ces styles pour les écrans jusqu'à 640px (taille sm de Tailwind) */
+            .container {
+                width: 100%; /* Occupe toute la largeur disponible */
+                max-width: none; /* Supprime la limite max-width pour ces écrans */
+                padding: 1.2rem; /* Réduit le padding pour maximiser l'espace */
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem; /* Grande taille pour le titre */
+            color: #6a0572; /* Couleur vive pour le titre */
+            margin-bottom: 1.5rem;
+        }
+        h2 {
+            font-size: 1.8rem;
+            color: #4a0050;
+        }
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 1.5rem; /* Boutons très arrondis */
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        .btn-primary {
+            background-color: #8e44ad; /* Violet pastel */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #9b59b6; /* Violet plus clair au survol */
+        }
+        .btn-rock {
+            background-color: #ff7f50; /* Corail pastel */
+            color: white;
+        }
+        .btn-rock:hover {
+            background-color: #ff916d;
+        }
+        .btn-paper {
+            background-color: #6a5acd; /* Bleu-violet pastel */
+            color: white;
+        }
+        .btn-paper:hover {
+            background-color: #7b68ee;
+        }
+        .btn-scissors {
+            background-color: #20b2aa; /* Vert-bleu pastel */
+            color: white;
+        }
+        .btn-scissors:hover {
+            background-color: #2ecdc4;
+        }
+        /* Style pour le bouton d'interruption - plus discret et en bas */
+        .btn-interrupt {
+            background-color: transparent; /* Fond transparent */
+            color: #e74c3c; /* Texte rouge */
+            border: 2px solid #e74c3c; /* Bordure rouge */
+            font-size: 1rem; /* Taille plus petite */
+            padding: 0.5rem 1rem; /* Padding réduit */
+            border-radius: 0.75rem; /* Coins légèrement arrondis */
+            margin-top: 2rem; /* Plus de marge au-dessus */
+            box-shadow: none; /* Pas d'ombre */
+            width: auto; /* Largeur automatique */
+            align-self: center; /* Centre le bouton */
+        }
+        .btn-interrupt:hover {
+            background-color: #e74c3c; /* Fond rouge au survol */
+            color: white;
+            transform: none; /* Pas de transformation au survol */
+            box-shadow: none;
+        }
+
+
+        /* Force les 3 boutons de choix sur une seule ligne */
+        .choice-area .flex {
+            flex-wrap: nowrap; /* Empêche les boutons de passer à la ligne */
+            justify-content: center;
+            gap: 0.5rem; /* Réduit l'espace entre les boutons pour plus de compacité */
+        }
+        .choice-area button {
+            flex-basis: calc(33.33% - 0.33rem); /* Assure 3 boutons par ligne */
+            min-width: 80px; /* Largeur minimale pour éviter qu'ils ne soient trop petits */
+            font-size: 1.2rem; /* Taille de police légèrement réduite pour les petits écrans */
+            padding: 0.7rem 0.8rem; /* Réduit le padding des boutons */
+        }
+        /* Ajustement pour les très petits écrans si nécessaire, mais l'objectif est de les garder sur une ligne */
+        @media (max-width: 360px) {
+            .choice-area button {
+                font-size: 1.1rem;
+                padding: 0.6rem 0.7rem;
+            }
+        }
+        /* Icônes de choix dans les boutons */
+        .choice-button-icon {
+            font-size: 3rem; /* Taille des icônes dans les boutons */
+            line-height: 1; /* Assure que l'icône ne crée pas de hauteur supplémentaire inutile */
+            margin-bottom: 0; /* Pas de marge en bas si pas de texte */
+        }
+        /* Ajustement de la taille de l'icône pour les très petits écrans */
+        @media (max-width: 360px) {
+            .choice-button-icon {
+                font-size: 2.5rem;
+            }
+        }
+
+
+        .input-field {
+            padding: 0.8rem 1.2rem;
+            border-radius: 1rem;
+            border: 2px solid #ccc;
+            font-size: 1.2rem;
+            width: 100%;
+            max-width: 300px;
+            box-sizing: border-box;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-family: 'Patrick Hand', cursive;
+            color: #333;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #8e44ad;
+            box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.3);
+        }
+        .score-display {
+            background-color: #ecf0f1; /* Gris clair pastel */
+            padding: 0.5rem 1rem; /* Réduit le padding vertical encore plus */
+            border-radius: 1.5rem;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #333;
+            flex-wrap: nowrap; /* Empêche l'enroulement pour garder sur une ligne */
+            gap: 0.5rem; /* Espace entre les éléments de score */
+        }
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1; /* Permet aux éléments de prendre l'espace disponible */
+            min-width: 0; /* Permet de réduire si l'espace est très limité */
+        }
+        /* Ajustement de la zone de score pour les petits écrans */
+        @media (max-width: 480px) {
+            .score-display {
+                justify-content: space-between; /* Espacement équitable */
+                padding: 0.4rem 0.6rem; /* Réduire encore le padding */
+            }
+            .score-item {
+                flex-basis: auto; /* Laisse le contenu dicter la largeur */
+                margin: 0 0.1rem; /* Petites marges latérales */
+            }
+            /* Pour l'objectif, on le garde au centre mais on le rend plus compact */
+            .score-item:nth-child(2) {
+                font-size: 1.1rem; /* Taille de police plus petite pour l'objectif */
+                white-space: normal; /* Permet le retour à la ligne */
+                line-height: 1.2; /* Ajuste la hauteur de ligne pour compacter */
+            }
+            .score-item span { /* Noms des joueurs */
+                font-size: 1.2rem; /* Augmenté */
+            }
+            .score-value { /* Scores numériques */
+                font-size: 2rem; /* Augmenté */
+            }
+        }
+
+        .score-value {
+            font-size: 2.2rem; /* Augmenté pour les écrans plus grands */
+            color: #8e44ad;
+        }
+        /* Noms des joueurs pour les écrans plus grands */
+        .score-item span:not(#score-target-display) {
+            font-size: 1.3rem;
+        }
+
+        .duel-area {
+            background-color: #ffebee; /* Rouge très clair pastel */
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            min-height: 150px; /* Hauteur minimale pour la zone de duel */
+            position: relative;
+            flex-wrap: nowrap; /* Force l'affichage horizontal */
+            gap: 1rem; /* Espace entre les éléments de duel */
+        }
+        /* Ajustement de la zone de duel pour les petits écrans (reste horizontale) */
+        @media (max-width: 480px) {
+            .duel-area {
+                padding: 1rem; /* Réduit le padding */
+                gap: 0.5rem; /* Réduit le gap */
+            }
+            .player-choice, .opponent-choice {
+                font-size: 1.3rem; /* Réduit la taille de police des noms */
+            }
+            .duel-separator {
+                font-size: 2.5rem; /* Réduit la taille du VS */
+            }
+            .choice-icon {
+                font-size: 2.8rem; /* Réduit la taille des icônes de choix */
+            }
+        }
+
+        .player-choice, .opponent-choice {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #333;
+            flex-grow: 1; /* Permet aux choix de prendre l'espace disponible */
+            min-width: 0; /* Permet de réduire si l'espace est très limité */
+        }
+        .duel-separator {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #8e44ad;
+        }
+        .message-area {
+            background-color: #e8f5e9; /* Vert très clair pastel */
+            padding: 1rem;
+            border-radius: 1.5rem;
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2e7d32; /* Vert foncé */
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hidden {
+            display: none;
+        }
+
+        /* Styles pour le sélecteur de score cible */
+        .score-target-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .score-target-selector button {
+            background-color: #aed6f1; /* Bleu clair pastel */
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+        .score-target-selector button:hover {
+            background-color: #c5e1f7;
+        }
+        .score-target-selector span {
+            font-size: 1.8rem;
+            color: #6a0572;
+            font-weight: bold;
+        }
+
+        /* Styles pour la modale de fin de partie */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem; /* Ajout d'un padding pour la modale sur petits écrans */
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            width: 450px;
+            font-family: 'Patrick Hand', cursive;
+        }
+        .modal-content h2 {
+            font-size: 2.5rem;
+            color: #8e44ad;
+            margin-bottom: 1.5rem;
+        }
+        .modal-content p {
+            font-size: 1.6rem;
+            color: #555;
+            margin-bottom: 2rem;
+        }
+        .modal-content .btn {
+            font-size: 1.6rem;
+            padding: 0.8rem 1.8rem;
+        }
+        .game-id-display {
+            background-color: #f0f4f8; /* Un gris-bleu très clair */
+            padding: 0.8rem;
+            border-radius: 1rem;
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            color: #555;
+            word-break: break-all; /* Permet au texte long de se couper */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .game-id-value {
+            font-weight: bold;
+            color: #6a0572;
+            font-size: 1.4rem;
+        }
+
+        /* Styles pour le message de statut Firebase */
+        #firebase-status-message {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            border-radius: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Page de Paramètres -->
+        <div id="settings-page">
+            <h1>Paramètres du Jeu</h1>
+
+            <div class="flex flex-col items-center gap-4">
+                <label for="player-name" class="text-xl font-bold text-gray-700">Ton Nom :</label>
+                <input type="text" id="player-name" class="input-field" placeholder="Ex: Lili">
+            </div>
+
+            <div class="score-target-selector mt-4">
+                <span class="text-xl font-bold text-gray-700">Score cible :</span>
+                <button id="score-target-minus">-</button>
+                <span id="score-target-value" class="text-2xl font-bold">3</span>
+                <button id="score-target-plus">+</button>
+            </div>
+
+            <!-- Boutons activés par défaut en HTML -->
+            <button id="create-game-btn" class="btn btn-primary w-full mt-6">Créer une nouvelle partie</button>
+
+            <div class="mt-8">
+                <h2 class="text-xl font-bold text-gray-700">Ou Rejoindre une partie :</h2>
+                <input type="text" id="game-id-input" class="input-field mt-4" placeholder="Saisis l'ID de la partie">
+                <button id="join-game-btn" class="btn btn-primary w-full mt-2">Rejoindre la partie</button>
+            </div>
+
+            <!-- Message de statut Firebase sur la page de paramètres -->
+            <div id="firebase-status-message" class="mt-4 text-center">
+                Initialisation de Firebase...
+            </div>
+        </div>
+
+        <!-- Écran de Jeu -->
+        <div id="game-page" class="hidden">
+            <h1 id="game-title">Pierre-Feuille-Ciseaux</h1>
+
+            <!-- Zone d'affichage de l'ID de la partie (déplacée ici) -->
+            <div id="game-id-display" class="game-id-display hidden">
+                <p>ID de la partie :</p>
+                <span class="game-id-value" id="current-game-id"></span>
+                <button id="copy-game-id-btn" class="btn btn-primary btn-sm mt-2">Copier l'ID</button>
+                <p class="text-sm text-gray-400 mt-2">Partage cet ID avec ton adversaire !</p>
+                <p id="waiting-for-opponent-message" class="text-lg text-purple-600 mt-2"></p>
+            </div>
+
+            <!-- Zone de Score -->
+            <div class="score-display mt-6">
+                <div class="score-item">
+                    <span id="player1-name-display" class="font-bold">Joueur 1</span>
+                    <span id="player1-score" class="score-value">0</span>
+                </div>
+                <div class="score-item">
+                    <span id="score-target-display" class="text-lg text-gray-500">Objectif<br>3 pts</span>
+                </div>
+                <div class="score-item">
+                    <span id="player2-name-display" class="font-bold">Joueur 2</span>
+                    <span id="player2-score" class="score-value">0</span>
+                </div>
+            </div>
+
+            <!-- Zone de Duel (Déplacée ici) -->
+            <div class="duel-area mt-6 hidden" id="duel-area">
+                <div class="player-choice">
+                    <span id="player1-duel-choice" class="choice-button-icon">?</span>
+                    <span id="player1-duel-name">Joueur 1</span>
+                </div>
+                <span class="duel-separator">VS</span>
+                <div class="opponent-choice">
+                    <span id="player2-duel-choice" class="choice-button-icon">?</span>
+                    <span id="player2-duel-name">Joueur 2</span>
+                </div>
+            </div>
+
+            <!-- Zone de Choix du Joueur -->
+            <div class="choice-area flex flex-col items-center gap-4 mt-6">
+                <h2 id="current-player-turn">C'est à ton tour !</h2>
+                <div class="flex justify-center gap-4 w-full">
+                    <button id="rock-btn" class="btn btn-rock flex-1">
+                        <span class="choice-button-icon">✊</span>
+                    </button>
+                    <button id="paper-btn" class="btn btn-paper flex-1">
+                        <span class="choice-button-icon">✋</span>
+                    </button>
+                    <button id="scissors-btn" class="btn btn-scissors flex-1">
+                        <span class="choice-button-icon">✌️</span>
+                    </button>
+                </div>
+                <p id="player-choice-feedback" class="text-lg text-gray-600 mt-2"></p>
+            </div>
+
+            <!-- Zone de Message -->
+            <div class="message-area mt-6" id="game-message">
+                Fais ton choix !
+            </div>
+
+            <!-- Bouton d'interruption (Déplacé en bas) -->
+            <button id="interrupt-game-btn" class="btn btn-interrupt">Interrompre la partie</button>
+        </div>
+    </div>
+
+    <!-- Modale de Fin de Partie -->
+    <div id="game-over-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 id="modal-title"></h2>
+            <p id="modal-message"></p>
+            <button id="replay-btn" class="btn btn-primary">Rejouer</button>
+        </div>
+    </div>
+
+    <div style="position: fixed; bottom: 5px; right: 5px; font-size: 0.8rem; color: #888; font-family: sans-serif;">
+        Version: <span id="app-version">v1.6</span>
+    </div>
+
+    <script type="module">
+        // Version du code
+        const APP_VERSION = "v1.6"; // Incrémenter à chaque mise à jour majeure
+
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration (provided by the user)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0-ZvvLswmVUrc1os2lL_xQVr9s6mTAJE",
+            authDomain: "pierrefeuilleciseauxgame.firebaseapp.com",
+            projectId: "pierrefeuilleciseauxgame",
+            storageBucket: "pierrefeuilleciseauxgame.firebasestorage.app",
+            messagingSenderId: "732924531883",
+            appId: "1:732924531883:web:c6e021cc6a98102a6553ee"
+        };
+
+        // Initialize Firebase variables
+        let app;
+        let db;
+        let auth;
+        let userId; // Will store the authenticated user's ID
+        let gameRef; // Reference to the current game document in Firestore
+        let unsubscribeFromGame = null; // Function to unsubscribe from Firestore listener
+        let firebaseInitTimeout = null; // Timeout for Firebase initialization
+
+        // Variables du jeu (état local, sera synchronisé avec Firestore)
+        let localPlayerId = null; // Will be 'player1' or 'player2' in the game document
+        let gameData = null; // Stores the current state of the game from Firestore
+        let scoreTarget = 3; // Moved declaration to the top
+        let gameTimeout = null; // For clearing timeouts
+
+        // Determine the appId for Firestore path based on projectId
+        const firestoreAppId = firebaseConfig.projectId;
+
+        // Références aux éléments du DOM
+        const settingsPage = document.getElementById('settings-page');
+        const gamePage = document.getElementById('game-page');
+        const playerNameInput = document.getElementById('player-name'); // Un seul champ de nom
+        const scoreTargetValue = document.getElementById('score-target-value');
+        const scoreTargetMinusBtn = document.getElementById('score-target-minus');
+        const scoreTargetPlusBtn = document.getElementById('score-target-plus');
+        const createGameBtn = document.getElementById('create-game-btn'); // Nouveau bouton
+        const gameIdInput = document.getElementById('game-id-input');
+        const joinGameBtn = document.getElementById('join-game-btn'); // Nouveau bouton
+        // gameIdDisplay est maintenant dans game-page
+        const gameIdDisplay = document.getElementById('game-id-display'); // Zone d'affichage ID
+        const currentGameIdSpan = document.getElementById('current-game-id');
+        const copyGameIdBtn = document.getElementById('copy-game-id-btn');
+        const waitingForOpponentMessage = document.getElementById('waiting-for-opponent-message');
+        const interruptGameBtn = document.getElementById('interrupt-game-btn');
+
+        const player1NameDisplay = document.getElementById('player1-name-display');
+        const player2NameDisplay = document.getElementById('player2-name-display');
+        const player1ScoreDisplay = document.getElementById('player1-score');
+        const player2ScoreDisplay = document.getElementById('player2-score');
+        const scoreTargetDisplay = document.getElementById('score-target-display');
+        const currentPlayerTurn = document.getElementById('current-player-turn');
+        const rockBtn = document.getElementById('rock-btn');
+        const paperBtn = document.getElementById('paper-btn');
+        const scissorsBtn = document.getElementById('scissors-btn');
+        const playerChoiceFeedback = document.getElementById('player-choice-feedback');
+        const duelArea = document.getElementById('duel-area');
+        const player1DuelChoice = document.getElementById('player1-duel-choice');
+        const player2DuelChoice = document.getElementById('player2-duel-choice');
+        const player1DuelName = document.getElementById('player1-duel-name');
+        const player2DuelName = document.getElementById('player2-duel-name');
+        const gameMessage = document.getElementById('game-message');
+        const firebaseStatusMessage = document.getElementById('firebase-status-message'); // Nouveau: message de statut Firebase
+
+        const gameOverModal = document.getElementById('game-over-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const replayBtn = document.getElementById('replay-btn');
+
+        const choices = {
+            'rock': { name: 'Pierre', emoji: '✊' },
+            'paper': { name: 'Feuille', emoji: '✋' },
+            'scissors': { name: 'Ciseaux', emoji: '✌️' }
+        };
+
+        // --- Firebase Core Functions ---
+        async function initializeFirebase() {
+            try {
+                if (!app) { // Initialize only once
+                    console.log("Initializing Firebase app...");
+                    firebaseStatusMessage.textContent = "Initialisation de l'application Firebase...";
+                    firebaseStatusMessage.style.backgroundColor = '#e0f7fa'; // Light blue
+                    firebaseStatusMessage.style.color = '#006064'; // Dark blue
+
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    // Set a timeout for Firebase initialization
+                    firebaseInitTimeout = setTimeout(() => {
+                        if (!userId) { // If userId is still null, Firebase hasn't authenticated
+                            console.error("Firebase initialization timed out.");
+                            firebaseStatusMessage.textContent = "Échec de connexion Firebase : Délai dépassé. Vérifie ta connexion Internet ou les restrictions réseau.";
+                            firebaseStatusMessage.style.backgroundColor = '#f8d7da'; // Light red
+                            firebaseStatusMessage.style.color = '#721c24'; // Dark red
+                            disableSettingsInputs(); // Keep buttons disabled
+                        }
+                    }, 10000); // 10 seconds timeout
+
+                    console.log("Setting up onAuthStateChanged listener...");
+                    firebaseStatusMessage.textContent = "Écoute des changements d'authentification Firebase...";
+                    firebaseStatusMessage.style.backgroundColor = '#e3f2fd'; // Lighter blue
+                    firebaseStatusMessage.style.color = '#1976d2'; // Medium blue
+
+                    // Listen for authentication state changes
+                    onAuthStateChanged(auth, (user) => {
+                        if (firebaseInitTimeout) clearTimeout(firebaseInitTimeout); // Clear timeout if auth succeeds
+
+                        if (user) {
+                            userId = user.uid;
+                            console.log("Firebase initialized and user authenticated. User ID:", userId);
+                            firebaseStatusMessage.textContent = "Firebase connecté ! Prêt à jouer.";
+                            firebaseStatusMessage.style.backgroundColor = '#d4edda'; // Light green
+                            firebaseStatusMessage.style.color = '#155724'; // Dark green
+                            enableSettingsInputs(); // Enable settings inputs
+                            updateScoreTargetDisplay();
+                            updateGameInfo();
+                            showPage('settings-page'); // Always start on settings page
+                        } else {
+                            // User is signed out or not yet signed in. Attempt to sign in anonymously.
+                            console.log("User not authenticated. Attempting anonymous sign-in...");
+                            firebaseStatusMessage.textContent = "Tentative de connexion anonyme à Firebase...";
+                            firebaseStatusMessage.style.backgroundColor = '#fff3cd'; // Light yellow
+                            firebaseStatusMessage.style.color = '#856404'; // Dark yellow
+
+                            signInAnonymously(auth).then((anonUser) => {
+                                userId = anonUser.user.uid;
+                                console.log("Signed in anonymously. User ID:", userId);
+                                firebaseStatusMessage.textContent = "Firebase connecté (anonyme) ! Prêt à jouer.";
+                                firebaseStatusMessage.style.backgroundColor = '#d4edda'; // Light green
+                                firebaseStatusMessage.style.color = '#155724'; // Dark green
+                                enableSettingsInputs(); // Enable after anonymous sign-in
+                                updateScoreTargetDisplay();
+                                updateGameInfo();
+                                showPage('settings-page');
+                            }).catch((error) => {
+                                console.error("Error signing in anonymously:", error);
+                                firebaseStatusMessage.textContent = `Erreur de connexion Firebase : ${error.message}. Vérifie ta connexion.`;
+                                firebaseStatusMessage.style.backgroundColor = '#f8d7da'; // Light red
+                                firebaseStatusMessage.style.color = '#721c24'; // Dark red
+                                disableSettingsInputs(); // Keep disabled if auth fails
+                            });
+                        }
+                    });
+
+                    // If __initial_auth_token is provided (Canvas environment), use it
+                    if (typeof __initial_auth_token !== 'undefined') {
+                        console.log("Attempting sign-in with custom token...");
+                        firebaseStatusMessage.textContent = "Tentative de connexion avec un jeton personnalisé...";
+                        firebaseStatusMessage.style.backgroundColor = '#cce5ff'; // Pale blue
+                        firebaseStatusMessage.style.color = '#004085'; // Darker blue
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    }
+                }
+            } catch (error) {
+                console.error("Error initializing Firebase or signing in:", error);
+                firebaseStatusMessage.textContent = `Erreur d'initialisation de Firebase : ${error.message}.`;
+                firebaseStatusMessage.style.backgroundColor = '#f8d7da'; // Light red
+                firebaseStatusMessage.style.color = '#721c24'; // Dark red
+                disableSettingsInputs(); // Keep disabled if init fails
+            }
+        }
+
+        // --- Helper Functions (defined before usage) ---
+        function showPage(pageId) {
+            settingsPage.classList.add('hidden');
+            gamePage.classList.add('hidden');
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        function updateScoreTargetDisplay() {
+            scoreTargetValue.textContent = scoreTarget;
+            scoreTargetDisplay.innerHTML = `Objectif<br>${scoreTarget} pts`;
+        }
+
+        function updateGameInfo() {
+            // Utilise les noms par défaut si les champs sont vides
+            const p1Name = gameData ? gameData.player1Name : (playerNameInput.value.trim() || 'Joueur 1');
+            const p2Name = gameData ? gameData.player2Name : 'Joueur 2'; // Player 2 name only comes from gameData
+
+            player1NameDisplay.textContent = p1Name;
+            player2NameDisplay.textContent = p2Name;
+            player1ScoreDisplay.textContent = gameData ? gameData.player1Score : 0;
+            player2ScoreDisplay.textContent = gameData ? gameData.player2Score : 0;
+            scoreTargetDisplay.innerHTML = `Objectif<br>${gameData ? gameData.scoreTarget : scoreTarget} pts`;
+            player1DuelName.textContent = p1Name;
+            player2DuelName.textContent = p2Name;
+        }
+
+        function resetRoundUI() {
+            playerChoiceFeedback.textContent = '';
+            gameMessage.textContent = 'Fais ton choix !';
+            duelArea.classList.add('hidden'); // Cache la zone de duel au début d'un nouveau tour
+            player1DuelChoice.textContent = '?';
+            player2DuelChoice.textContent = '?';
+            // Réactiver les boutons de choix
+            rockBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            paperBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            scissorsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            rockBtn.disabled = false; // Réactiver l'attribut disabled pour les boutons de choix
+            paperBtn.disabled = false;
+            scissorsBtn.disabled = false;
+            // Réinitialiser les styles de sélection
+            rockBtn.classList.remove('ring-4', 'ring-purple-400');
+            paperBtn.classList.remove('ring-4', 'ring-purple-400');
+            scissorsBtn.classList.remove('ring-4', 'ring-purple-400');
+        }
+
+        function disableChoiceButtons() {
+            rockBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            paperBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            scissorsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            rockBtn.disabled = true; // Désactiver l'attribut disabled pour les boutons de choix
+            paperBtn.disabled = true;
+            scissorsBtn.disabled = true;
+        }
+
+        function enableChoiceButtons() {
+            rockBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            paperBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            scissorsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            rockBtn.disabled = false; // Réactiver l'attribut disabled pour les boutons de choix
+            paperBtn.disabled = false;
+            scissorsBtn.disabled = false;
+        }
+
+        function showGameOverModal(winnerName) {
+            modalTitle.textContent = winnerName === 'Égalité' ? 'Partie Terminée !' : `Félicitations ${winnerName} !`;
+            modalMessage.textContent = winnerName === 'Égalité' ? 'La partie est une égalité.' : `${winnerName} a gagné la partie !`;
+            gameOverModal.classList.remove('hidden');
+        }
+
+        function hideGameOverModal() {
+            gameOverModal.classList.add('hidden');
+        }
+
+        function determineWinner(choice1, choice2) {
+            if (choice1 === choice2) return 'Égalité';
+            if (
+                (choice1 === 'rock' && choice2 === 'scissors') ||
+                (choice1 === 'paper' && choice2 === 'rock') ||
+                (choice1 === 'scissors' && choice2 === 'paper')
+            ) {
+                return 'Joueur 1';
+            }
+            return 'Joueur 2';
+        }
+
+        function generateGameId() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function disableSettingsInputs() {
+            console.log("disableSettingsInputs called.");
+            playerNameInput.disabled = true;
+            scoreTargetMinusBtn.disabled = true;
+            scoreTargetPlusBtn.disabled = true;
+            createGameBtn.disabled = true; // Désactiver l'attribut disabled
+            joinGameBtn.disabled = true; // Désactiver l'attribut disabled
+            gameIdInput.disabled = true; // Désactiver l'attribut disabled
+
+            // Ajouter des classes Tailwind pour l'opacité et le curseur
+            createGameBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            joinGameBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            console.log(`State after disable: CreateBtn disabled=${createGameBtn.disabled}, JoinBtn disabled=${joinGameBtn.disabled}`);
+        }
+
+        function enableSettingsInputs() {
+            console.log("enableSettingsInputs called.");
+            playerNameInput.disabled = false;
+            scoreTargetMinusBtn.disabled = false;
+            scoreTargetPlusBtn.disabled = false;
+            createGameBtn.disabled = false; // Réactiver l'attribut disabled
+            joinGameBtn.disabled = false; // Réactiver l'attribut disabled
+            gameIdInput.disabled = false; // Réactiver l'attribut disabled
+
+            // Retirer les classes Tailwind pour l'opacité et le curseur
+            createGameBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            joinGameBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            console.log(`State after enable: CreateBtn disabled=${createGameBtn.disabled}, JoinBtn disabled=${joinGameBtn.disabled}`);
+        }
+
+        // --- Game Lobby Functions ---
+        async function createGame() {
+            if (!db || !userId) {
+                console.error("Firebase not initialized or userId not set. Cannot create game.");
+                firebaseStatusMessage.textContent = "Erreur: Firebase non initialisé ou utilisateur non connecté.";
+                firebaseStatusMessage.style.backgroundColor = '#f8d7da';
+                firebaseStatusMessage.style.color = '#721c24';
+                return;
+            }
+
+            const gameId = generateGameId();
+            gameRef = doc(db, `artifacts/${firestoreAppId}/public/data/games`, gameId);
+            const playerName = playerNameInput.value.trim() || 'Joueur';
+
+            try {
+                disableSettingsInputs(); // Disable buttons immediately to prevent double-clicks
+                await setDoc(gameRef, {
+                    player1Id: userId,
+                    player1Name: playerName,
+                    player1Score: 0,
+                    player1Choice: null,
+                    player2Id: null,
+                    player2Name: null,
+                    player2Score: 0,
+                    player2Choice: null,
+                    scoreTarget: parseInt(scoreTargetValue.textContent),
+                    status: 'waitingForPlayer2', // Initial status
+                    currentPlayerTurn: 'player1', // Player1 starts (conceptually)
+                    lastUpdated: Date.now()
+                });
+                localPlayerId = 'player1';
+                currentGameIdSpan.textContent = gameId; // Set ID here
+                console.log("Game created with ID:", gameId);
+                listenToGameChanges(gameId); // Start listening for changes
+                // updateGameUI will now handle showing the game page with ID
+            } catch (e) {
+                console.error("Error creating game:", e);
+                gameMessage.textContent = "Erreur lors de la création de la partie.";
+                enableSettingsInputs(); // Re-enable buttons if creation failed
+            }
+        }
+
+        async function joinGame() {
+            if (!db || !userId) {
+                console.error("joinGame: Firebase not initialized or userId not set. Cannot join game.");
+                firebaseStatusMessage.textContent = "Erreur: Firebase non initialisé ou utilisateur non connecté.";
+                firebaseStatusMessage.style.backgroundColor = '#f8d7da';
+                firebaseStatusMessage.style.color = '#721c24';
+                return;
+            }
+
+            const gameId = gameIdInput.value.trim();
+            if (!gameId) {
+                gameMessage.textContent = "Veuillez saisir un ID de partie.";
+                console.log("joinGame: No game ID provided.");
+                return;
+            }
+
+            gameRef = doc(db, `artifacts/${firestoreAppId}/public/data/games`, gameId);
+            console.log("joinGame: Attempting to get game document for ID:", gameId);
+            
+            try {
+                disableSettingsInputs(); // Disable buttons immediately
+                const gameSnap = await getDoc(gameRef);
+
+                if (gameSnap.exists()) {
+                    const data = gameSnap.data();
+                    console.log("joinGame: Game document exists. Data:", data);
+
+                    // Check if current user is already player1 or player2
+                    if (data.player1Id === userId || data.player2Id === userId) {
+                        localPlayerId = (data.player1Id === userId) ? 'player1' : 'player2';
+                        console.log("joinGame: Rejoining own game as:", localPlayerId);
+                        gameMessage.textContent = "Reconnexion à la partie...";
+                        listenToGameChanges(gameId);
+                        // UI will be updated by onSnapshot
+                        return;
+                    }
+
+                    // Check if both player slots are taken by *other* users
+                    if (data.player1Id && data.player2Id && data.player1Id !== userId && data.player2Id !== userId) {
+                        gameMessage.textContent = "Cette partie est déjà pleine ou en cours.";
+                        console.log("joinGame: Game is full and current user is not part of it.");
+                        enableSettingsInputs(); // Re-enable if game is full
+                        return;
+                    }
+                    
+                    // If player2 slot is empty, join as player2
+                    if (!data.player2Id) {
+                        console.log("joinGame: Slot for player2 is available.");
+                        const playerName = playerNameInput.value.trim() || 'Joueur';
+                        await setDoc(gameRef, {
+                            player2Id: userId,
+                            player2Name: playerName,
+                            status: 'playing' // Game starts when 2nd player joins
+                        }, { merge: true }); // Merge to update specific fields
+                        localPlayerId = 'player2';
+                        console.log("joinGame: Successfully joined game as player2:", gameId);
+                        listenToGameChanges(gameId); // Start listening for changes
+                        // UI will be updated by onSnapshot
+                    } else {
+                        gameMessage.textContent = "Cette partie est déjà pleine.";
+                        console.log("joinGame: Game is already full.");
+                        enableSettingsInputs(); // Re-enable if game is full
+                    }
+                } else {
+                    gameMessage.textContent = "Partie introuvable. Vérifie l'ID.";
+                    console.log("joinGame: Game document does not exist for ID:", gameId);
+                    enableSettingsInputs(); // Re-enable if game not found
+                }
+            } catch (error) {
+                console.error("joinGame: Error during join process (permissions?).", error);
+                gameMessage.textContent = "Erreur lors de la tentative de rejoindre la partie (permissions?).";
+                enableSettingsInputs(); // Re-enable buttons if an error occurred
+            }
+        }
+
+        // --- Real-time Game Logic with Firestore Listener ---
+        function listenToGameChanges(gameId) {
+            if (unsubscribeFromGame) {
+                unsubscribeFromGame(); // Unsubscribe from previous game if any
+            }
+            gameRef = doc(db, `artifacts/${firestoreAppId}/public/data/games`, gameId);
+            unsubscribeFromGame = onSnapshot(gameRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    gameData = docSnap.data();
+                    console.log("Game data updated by onSnapshot:", gameData);
+                    updateGameUI(); // Update UI based on new gameData
+                } else {
+                    console.log("Game deleted or not found by onSnapshot.");
+                    gameMessage.textContent = "La partie a été supprimée ou n'existe plus.";
+                    interruptGame(); // Go back to settings if game disappears
+                }
+            }, (error) => {
+                console.error("Error listening to game changes:", error);
+                gameMessage.textContent = "Erreur de synchronisation de la partie.";
+            });
+        }
+
+        function updateGameUI() {
+            if (!gameData || !userId) {
+                console.log("updateGameUI: gameData or userId not available. Skipping UI update.");
+                return;
+            }
+
+            console.log("--- updateGameUI called ---");
+            console.log("localPlayerId (before determination):", localPlayerId);
+            console.log("Current userId:", userId);
+            console.log("gameData.status:", gameData.status);
+            console.log("gameData.currentPlayerTurn:", gameData.currentPlayerTurn);
+            console.log("gameData.player1Id:", gameData.player1Id);
+            console.log("gameData.player2Id:", gameData.player2Id);
+
+            // Determine if current user is player1 or player2 in the gameData
+            const isPlayer1 = gameData.player1Id === userId;
+            const isPlayer2 = gameData.player2Id === userId;
+
+            // If localPlayerId is not yet set, try to determine it from gameData
+            // This is crucial for clients rejoining or refreshing
+            if (!localPlayerId) {
+                if (isPlayer1) {
+                    localPlayerId = 'player1';
+                } else if (isPlayer2) {
+                    localPlayerId = 'player2';
+                }
+                console.log("localPlayerId (after determination):", localPlayerId);
+            }
+            console.log("Is current user player1?", isPlayer1);
+            console.log("Is current user player2?", isPlayer2);
+
+
+            // Update player names and scores
+            player1NameDisplay.textContent = gameData.player1Name || 'Joueur 1';
+            player2NameDisplay.textContent = gameData.player2Name || 'Joueur 2';
+            player1ScoreDisplay.textContent = gameData.player1Score;
+            player2ScoreDisplay.textContent = gameData.player2Score;
+            scoreTargetDisplay.innerHTML = `Objectif<br>${gameData.scoreTarget} pts`;
+
+            // Clear player turn highlight
+            player1NameDisplay.classList.remove('text-purple-700', 'border-b-2', 'border-purple-700');
+            player2NameDisplay.classList.remove('text-purple-700', 'border-b-2', 'border-purple-700');
+
+
+            // Update duel area
+            if (gameData.player1Choice && gameData.player2Choice) {
+                duelArea.classList.remove('hidden');
+                player1DuelChoice.textContent = choices[gameData.player1Choice].emoji;
+                player2DuelChoice.textContent = choices[gameData.player2Choice].emoji;
+            } else {
+                duelArea.classList.add('hidden');
+                player1DuelChoice.textContent = '?';
+                player2DuelChoice.textContent = '?';
+            }
+
+            // Handle game status transitions
+            if (gameData.status === 'waitingForPlayer2') {
+                showPage('game-page'); // SHOW GAME PAGE
+                resetRoundUI(); // Ensure choice buttons are disabled and UI is clean
+                gameIdDisplay.classList.remove('hidden'); // Ensure ID is visible
+                currentGameIdSpan.textContent = gameRef.id; // Display the game ID
+                waitingForOpponentMessage.textContent = `Partie créée ! Partage cet ID avec ton adversaire : ${gameRef.id}. En attente du deuxième joueur... (Ton ID: ${userId.substring(0, 8)}...)`;
+                gameMessage.textContent = "En attente du deuxième joueur...";
+                currentPlayerTurn.textContent = "En attente d'un adversaire..."; // Clear player turn message
+                disableChoiceButtons(); // Choice buttons should always be disabled in this state
+                // Ensure settings inputs are disabled when on game page waiting for opponent
+                disableSettingsInputs(); // Keep settings inputs disabled
+            } else if (gameData.status === 'playing') {
+                waitingForOpponentMessage.textContent = ''; // Clear waiting message
+                gameIdDisplay.classList.add('hidden'); // Hide game ID once game starts
+                showPage('game-page'); // Ensure game page is visible
+                resetRoundUI(); // Reset UI for new round
+
+                const isMyTurn = (localPlayerId === 'player1' && gameData.currentPlayerTurn === 'player1') ||
+                                 (localPlayerId === 'player2' && gameData.currentPlayerTurn === 'player2');
+
+                console.log("isMyTurn:", isMyTurn);
+
+                // Highlight current player's name
+                if (gameData.currentPlayerTurn === 'player1') {
+                    player1NameDisplay.classList.add('text-purple-700', 'border-b-2', 'border-purple-700');
+                } else if (gameData.currentPlayerTurn === 'player2') {
+                    player2NameDisplay.classList.add('text-purple-700', 'border-b-2', 'border-purple-700');
+                }
+
+
+                if (isMyTurn) {
+                    currentPlayerTurn.textContent = `C'est à ton tour, ${gameData[localPlayerId + 'Name']} !`;
+                    gameMessage.textContent = "Fais ton choix !";
+                    enableChoiceButtons();
+                    // Remove highlight from previously chosen button
+                    rockBtn.classList.remove('ring-4', 'ring-purple-400');
+                    paperBtn.classList.remove('ring-4', 'ring-purple-400');
+                    scissorsBtn.classList.remove('ring-4', 'ring-purple-400');
+                } else {
+                    const opponentName = localPlayerId === 'player1' ? gameData.player2Name : gameData.player1Name;
+                    currentPlayerTurn.textContent = `C'est au tour de ${opponentName || 'ton adversaire'}...`;
+                    gameMessage.textContent = "En attente du choix de l'adversaire...";
+                    disableChoiceButtons();
+                }
+
+                // If both players have made a choice, trigger playRound logic
+                if (gameData.player1Choice && gameData.player2Choice) {
+                    console.log("Both players have chosen. Calling playRound.");
+                    playRound();
+                } else {
+                    // Ensure buttons are correctly enabled/disabled based on current player's choice status
+                    const myChoice = gameData[localPlayerId + 'Choice'];
+                    if (myChoice) {
+                        console.log("My choice is already made:", myChoice);
+                        disableChoiceButtons();
+                        document.getElementById(`${myChoice}-btn`).classList.add('ring-4', 'ring-purple-400');
+                        gameMessage.textContent = `Ton choix est fait : ${choices[myChoice].name}. En attente de l'adversaire...`;
+                    } else if (isMyTurn) {
+                        console.log("It's my turn and I haven't chosen. Enabling buttons.");
+                        enableChoiceButtons();
+                    }
+                }
+
+            } else if (gameData.status === 'gameOver') {
+                waitingForOpponentMessage.textContent = '';
+                gameIdDisplay.classList.add('hidden');
+                disableChoiceButtons();
+                showGameOverModal(gameData.winner);
+            }
+            console.log("--- updateGameUI finished ---");
+        }
+
+        // This function is now called when both choices are available in Firestore
+        async function playRound() {
+            if (gameTimeout) clearTimeout(gameTimeout);
+
+            const winner = determineWinner(gameData.player1Choice, gameData.player2Choice);
+            let message = '';
+            let newPlayer1Score = gameData.player1Score;
+            let newPlayer2Score = gameData.player2Score;
+
+            if (winner === 'Joueur 1') {
+                newPlayer1Score++;
+                message = `${gameData.player1Name} gagne ce tour !`;
+                gameMessage.style.color = '#2e7d32'; // Vert
+                gameMessage.style.backgroundColor = '#e8f5e9';
+            } else if (winner === 'Joueur 2') {
+                newPlayer2Score++;
+                message = `${gameData.player2Name} gagne ce tour !`;
+                gameMessage.style.color = '#d32f2f'; // Rouge
+                gameMessage.style.backgroundColor = '#ffebee';
+            } else {
+                message = 'Égalité !';
+                gameMessage.style.color = '#555'; // Gris
+                gameMessage.style.backgroundColor = '#ecf0f1';
+            }
+            gameMessage.textContent = message;
+            duelArea.classList.remove('hidden'); // Ensure duel area is visible
+
+            // Update scores and choices in Firestore
+            await setDoc(gameRef, {
+                player1Score: newPlayer1Score,
+                player2Score: newPlayer2Score,
+                player1Choice: null, // Reset choices for next round
+                player2Choice: null,
+                lastUpdated: Date.now()
+            }, { merge: true });
+
+            // Check for game over condition
+            if (newPlayer1Score >= gameData.scoreTarget || newPlayer2Score >= gameData.scoreTarget) {
+                let finalWinner = '';
+                if (newPlayer1Score >= gameData.scoreTarget && newPlayer2Score >= gameData.scoreTarget) {
+                    finalWinner = 'Égalité';
+                } else if (newPlayer1Score >= gameData.scoreTarget) {
+                    finalWinner = gameData.player1Name;
+                } else {
+                    finalWinner = gameData.player2Name;
+                }
+                await setDoc(gameRef, { status: 'gameOver', winner: finalWinner }, { merge: true });
+                // showGameOverModal will be called by onSnapshot listener
+            } else {
+                // Determine next player's turn
+                const nextPlayerTurn = (gameData.currentPlayerTurn === 'player1') ? 'player2' : 'player1';
+                await setDoc(gameRef, { currentPlayerTurn: nextPlayerTurn }, { merge: true });
+
+                gameTimeout = setTimeout(() => {
+                    // UI will be reset by onSnapshot when currentPlayerTurn changes
+                }, 3000);
+            }
+        }
+
+        // --- Player Actions (update Firestore) ---
+        async function handlePlayerChoice(choice) {
+            if (!gameRef || !localPlayerId || gameData.status !== 'playing') {
+                console.warn("Cannot make choice: Game not active or not your turn.");
+                return;
+            }
+
+            // Prevent choosing if it's not the current player's turn
+            if ((localPlayerId === 'player1' && gameData.currentPlayerTurn !== 'player1') ||
+                (localPlayerId === 'player2' && gameData.currentPlayerTurn !== 'player2')) {
+                gameMessage.textContent = "Ce n'est pas ton tour !";
+                return;
+            }
+
+            // Prevent choosing if player has already chosen
+            if (gameData[localPlayerId + 'Choice'] !== null) {
+                gameMessage.textContent = "Tu as déjà fait ton choix pour ce tour.";
+                return;
+            }
+
+            // Update choice in Firestore
+            const update = {};
+            update[localPlayerId + 'Choice'] = choice;
+            update.lastUpdated = Date.now();
+
+            try {
+                await setDoc(gameRef, update, { merge: true });
+                playerChoiceFeedback.textContent = `Ton choix est fait : ${choices[choice].name}. En attente de l'adversaire...`;
+                disableChoiceButtons();
+                document.getElementById(`${choice}-btn`).classList.add('ring-4', 'ring-purple-400');
+            } catch (e) {
+                console.error("Error setting player choice:", e);
+                gameMessage.textContent = "Erreur lors de l'enregistrement de ton choix.";
+            }
+        }
+
+        async function interruptGame() {
+            if (gameTimeout) clearTimeout(gameTimeout);
+            if (unsubscribeFromGame) unsubscribeFromGame(); // Stop listening to game changes
+
+            // Optionally, delete the game from Firestore if it's the creator leaving
+            if (gameRef && gameData && gameData.player1Id === userId) {
+                try {
+                    // await deleteDoc(gameRef); // Uncomment if you want to delete the game on interrupt by player1
+                    console.log("Game interrupted and (optionally) deleted from Firestore.");
+                } catch (e) {
+                    console.error("Error deleting game:", e);
+                }
+            }
+
+            // Reset local state
+            localPlayerId = null;
+            gameData = null;
+            gameRef = null;
+            // Reset UI
+            resetRoundUI(); // Calls functions that are now defined
+            hideGameOverModal();
+            playerNameInput.value = ''; // Clear player name input
+            gameIdInput.value = ''; // Clear game ID input
+            gameIdDisplay.classList.add('hidden'); // Hide game ID display
+            waitingForOpponentMessage.textContent = '';
+            enableSettingsInputs(); // Re-enable all settings inputs and buttons
+            scoreTarget = 3; // Reset score target locally
+            updateScoreTargetDisplay(); // Update display with reset score target
+            showPage('settings-page');
+            gameMessage.textContent = "Partie interrompue. Crée ou rejoins une nouvelle partie.";
+        }
+
+
+        // --- Event Listeners ---
+        scoreTargetMinusBtn.addEventListener('click', () => {
+            if (scoreTarget > 1) {
+                scoreTarget--;
+                updateScoreTargetDisplay();
+            }
+        });
+
+        scoreTargetPlusBtn.addEventListener('click', () => {
+            scoreTarget++;
+            updateScoreTargetDisplay();
+        });
+
+        createGameBtn.addEventListener('click', createGame);
+        joinGameBtn.addEventListener('click', joinGame);
+        copyGameIdBtn.addEventListener('click', () => {
+            const gameId = currentGameIdSpan.textContent;
+            // Using document.execCommand('copy') for better compatibility in iframes
+            const tempInput = document.createElement('textarea');
+            tempInput.value = gameId;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            alert('ID de partie copié !'); // Consider replacing with a custom modal/toast
+            document.body.removeChild(tempInput); // Remove after copy
+        });
+
+        rockBtn.addEventListener('click', () => handlePlayerChoice('rock'));
+        paperBtn.addEventListener('click', () => handlePlayerChoice('paper'));
+        scissorsBtn.addEventListener('click', () => handlePlayerChoice('scissors'));
+
+        replayBtn.addEventListener('click', () => {
+            hideGameOverModal();
+            // Reset game state in Firestore for a new game
+            if (gameRef && gameData) {
+                setDoc(gameRef, {
+                    player1Score: 0,
+                    player2Score: 0,
+                    player1Choice: null,
+                    player2Choice: null,
+                    status: 'playing',
+                    currentPlayerTurn: 'player1',
+                    winner: null,
+                    lastUpdated: Date.now()
+                }, { merge: true }).then(() => {
+                    console.log("Game reset in Firestore.");
+                }).catch(e => {
+                    console.error("Error resetting game in Firestore:", e);
+                });
+            }
+            // UI will update via onSnapshot
+        });
+
+        interruptGameBtn.addEventListener('click', interruptGame);
+
+        // Initialisation : Appeler initializeFirebase au chargement de la fenêtre
+        // Le reste de l'initialisation UI se fera via onAuthStateChanged
+        window.onload = async () => {
+            // Afficher la version de l'application
+            document.getElementById('app-version').textContent = APP_VERSION;
+
+            // Les inputs et boutons sont par défaut actifs en HTML.
+            // enableSettingsInputs() sera appelée par onAuthStateChanged une fois Firebase prêt.
+            playerNameInput.value = '';
+            gameIdInput.value = '';
+            updateScoreTargetDisplay();
+            updateGameInfo();
+            showPage('settings-page');
+            
+            // Display initial message while Firebase loads
+            firebaseStatusMessage.textContent = "Initialisation de Firebase...";
+            firebaseStatusMessage.style.backgroundColor = '#fff3cd'; // Light yellow
+            firebaseStatusMessage.style.color = '#856404'; // Dark yellow
+
+            await initializeFirebase();
+        };
+
+    </script>
+</body>
+</html>

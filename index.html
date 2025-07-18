@@ -239,6 +239,17 @@
             flex-wrap: nowrap; /* Force l'affichage horizontal */
             gap: 1rem; /* Espace entre les éléments de duel */
         }
+        /* Styles pour les fonds colorés du duel */
+        .duel-winner-bg {
+            background-color: #d4edda; /* Vert clair */
+        }
+        .duel-loser-bg {
+            background-color: #f8d7da; /* Rouge clair */
+        }
+        .duel-tie-bg {
+            background-color: #cce5ff; /* Bleu clair */
+        }
+
         /* Ajustement de la zone de duel pour les petits écrans (reste horizontale) */
         @media (max-width: 480px) {
             .duel-area {
@@ -264,6 +275,9 @@
             color: #333;
             flex-grow: 1; /* Permet aux choix de prendre l'espace disponible */
             min-width: 0; /* Permet de réduire si l'espace est très limité */
+            border-radius: 1rem; /* Arrondir les coins des zones de choix */
+            padding: 0.5rem; /* Ajouter un peu de padding pour le fond */
+            transition: background-color 0.3s ease; /* Transition douce pour le changement de couleur */
         }
         .duel-separator {
             font-size: 3rem;
@@ -493,12 +507,12 @@
     </div>
 
     <div style="position: fixed; bottom: 5px; right: 5px; font-size: 0.8rem; color: #888; font-family: sans-serif;">
-        Version: <span id="app-version">v2.6</span>
+        Version: <span id="app-version">v2.7</span>
     </div>
 
     <script type="module">
         // Version du code
-        const APP_VERSION = "v2.6"; // Incrémenter à chaque mise à jour majeure
+        const APP_VERSION = "v2.7"; // Incrémenter à chaque mise à jour majeure
 
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -721,6 +735,9 @@
             rockBtn.classList.remove('ring-4', 'ring-purple-400');
             paperBtn.classList.remove('ring-4', 'ring-purple-400');
             scissorsBtn.classList.remove('ring-4', 'ring-purple-400');
+            // Remove all background classes from duel elements
+            player1DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
+            player2DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
         }
 
         function disableChoiceButtons() {
@@ -1053,24 +1070,40 @@
                     // Both players have chosen, show duel results
                     console.log("[UI Update] Both choices made. Showing duel area.");
                     duelArea.classList.remove('hidden');
+
+                    // Set player names in duel area
+                    player1DuelName.textContent = gameData.player1Name || 'Joueur 1';
+                    player2DuelName.textContent = gameData.player2Name || 'Joueur 2';
+
                     player1DuelChoice.textContent = choices[gameData.player1Choice].emoji;
                     player2DuelChoice.textContent = choices[gameData.player2Choice].emoji;
                     disableChoiceButtons(); // Disable buttons during duel display
 
                     const winner = determineWinner(gameData.player1Choice, gameData.player2Choice);
                     let resultMessage = '';
+
+                    // Remove previous background classes
+                    player1DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
+                    player2DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
+
                     if (winner === 'Joueur 1') {
                         resultMessage = `${gameData.player1Name} gagne ce tour !`;
                         gameMessage.style.color = '#2e7d32'; // Vert
                         gameMessage.style.backgroundColor = '#e8f5e9';
+                        player1DuelChoice.parentElement.classList.add('duel-winner-bg');
+                        player2DuelChoice.parentElement.classList.add('duel-loser-bg');
                     } else if (winner === 'Joueur 2') {
                         resultMessage = `${gameData.player2Name} gagne ce tour !`;
                         gameMessage.style.color = '#d32f2f'; // Rouge
                         gameMessage.style.backgroundColor = '#ffebee';
+                        player2DuelChoice.parentElement.classList.add('duel-winner-bg');
+                        player1DuelChoice.parentElement.classList.add('duel-loser-bg');
                     } else {
                         resultMessage = 'Égalité !';
                         gameMessage.style.color = '#555'; // Gris
                         gameMessage.style.backgroundColor = '#ecf0f1';
+                        player1DuelChoice.parentElement.classList.add('duel-tie-bg');
+                        player2DuelChoice.parentElement.classList.add('duel-tie-bg');
                     }
                     gameMessage.textContent = resultMessage;
 
@@ -1095,6 +1128,13 @@
                     duelArea.classList.add('hidden');
                     player1DuelChoice.textContent = '?';
                     player2DuelChoice.textContent = '?';
+                    player1DuelName.textContent = gameData.player1Name || 'Joueur 1'; // Ensure names are reset/updated
+                    player2DuelName.textContent = gameData.player2Name || 'Joueur 2';
+
+                    // Remove all background classes from duel elements
+                    player1DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
+                    player2DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
+
                     // Ensure previous choice highlight is removed for new round
                     rockBtn.classList.remove('ring-4', 'ring-purple-400');
                     paperBtn.classList.remove('ring-4', 'ring-purple-400');

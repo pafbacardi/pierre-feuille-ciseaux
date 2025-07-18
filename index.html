@@ -493,12 +493,12 @@
     </div>
 
     <div style="position: fixed; bottom: 5px; right: 5px; font-size: 0.8rem; color: #888; font-family: sans-serif;">
-        Version: <span id="app-version">v1.6</span>
+        Version: <span id="app-version">v2.3</span>
     </div>
 
     <script type="module">
         // Version du code
-        const APP_VERSION = "v1.6"; // Incrémenter à chaque mise à jour majeure
+        const APP_VERSION = "v2.3"; // Incrémenter à chaque mise à jour majeure
 
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -548,6 +548,7 @@
         const currentGameIdSpan = document.getElementById('current-game-id');
         const copyGameIdBtn = document.getElementById('copy-game-id-btn');
         const waitingForOpponentMessage = document.getElementById('waiting-for-opponent-message');
+        // CORRECTED TYPO HERE:
         const interruptGameBtn = document.getElementById('interrupt-game-btn');
 
         const player1NameDisplay = document.getElementById('player1-name-display');
@@ -583,7 +584,7 @@
         async function initializeFirebase() {
             try {
                 if (!app) { // Initialize only once
-                    console.log("Initializing Firebase app...");
+                    console.log("[Firebase Init] Initializing Firebase app...");
                     firebaseStatusMessage.textContent = "Initialisation de l'application Firebase...";
                     firebaseStatusMessage.style.backgroundColor = '#e0f7fa'; // Light blue
                     firebaseStatusMessage.style.color = '#006064'; // Dark blue
@@ -595,7 +596,7 @@
                     // Set a timeout for Firebase initialization
                     firebaseInitTimeout = setTimeout(() => {
                         if (!userId) { // If userId is still null, Firebase hasn't authenticated
-                            console.error("Firebase initialization timed out.");
+                            console.error("[Firebase Init] Firebase initialization timed out. This might be due to network issues or browser restrictions.");
                             firebaseStatusMessage.textContent = "Échec de connexion Firebase : Délai dépassé. Vérifie ta connexion Internet ou les restrictions réseau.";
                             firebaseStatusMessage.style.backgroundColor = '#f8d7da'; // Light red
                             firebaseStatusMessage.style.color = '#721c24'; // Dark red
@@ -603,7 +604,7 @@
                         }
                     }, 10000); // 10 seconds timeout
 
-                    console.log("Setting up onAuthStateChanged listener...");
+                    console.log("[Firebase Init] Setting up onAuthStateChanged listener...");
                     firebaseStatusMessage.textContent = "Écoute des changements d'authentification Firebase...";
                     firebaseStatusMessage.style.backgroundColor = '#e3f2fd'; // Lighter blue
                     firebaseStatusMessage.style.color = '#1976d2'; // Medium blue
@@ -614,7 +615,7 @@
 
                         if (user) {
                             userId = user.uid;
-                            console.log("Firebase initialized and user authenticated. User ID:", userId);
+                            console.log("[Firebase Init] Firebase initialized and user authenticated. User ID:", userId);
                             firebaseStatusMessage.textContent = "Firebase connecté ! Prêt à jouer.";
                             firebaseStatusMessage.style.backgroundColor = '#d4edda'; // Light green
                             firebaseStatusMessage.style.color = '#155724'; // Dark green
@@ -624,14 +625,14 @@
                             showPage('settings-page'); // Always start on settings page
                         } else {
                             // User is signed out or not yet signed in. Attempt to sign in anonymously.
-                            console.log("User not authenticated. Attempting anonymous sign-in...");
+                            console.log("[Firebase Init] User not authenticated. Attempting anonymous sign-in...");
                             firebaseStatusMessage.textContent = "Tentative de connexion anonyme à Firebase...";
                             firebaseStatusMessage.style.backgroundColor = '#fff3cd'; // Light yellow
                             firebaseStatusMessage.style.color = '#856404'; // Dark yellow
 
                             signInAnonymously(auth).then((anonUser) => {
                                 userId = anonUser.user.uid;
-                                console.log("Signed in anonymously. User ID:", userId);
+                                console.log("[Firebase Init] Signed in anonymously. User ID:", userId);
                                 firebaseStatusMessage.textContent = "Firebase connecté (anonyme) ! Prêt à jouer.";
                                 firebaseStatusMessage.style.backgroundColor = '#d4edda'; // Light green
                                 firebaseStatusMessage.style.color = '#155724'; // Dark green
@@ -640,7 +641,7 @@
                                 updateGameInfo();
                                 showPage('settings-page');
                             }).catch((error) => {
-                                console.error("Error signing in anonymously:", error);
+                                console.error("[Firebase Init] Error signing in anonymously:", error);
                                 firebaseStatusMessage.textContent = `Erreur de connexion Firebase : ${error.message}. Vérifie ta connexion.`;
                                 firebaseStatusMessage.style.backgroundColor = '#f8d7da'; // Light red
                                 firebaseStatusMessage.style.color = '#721c24'; // Dark red
@@ -651,7 +652,7 @@
 
                     // If __initial_auth_token is provided (Canvas environment), use it
                     if (typeof __initial_auth_token !== 'undefined') {
-                        console.log("Attempting sign-in with custom token...");
+                        console.log("[Firebase Init] Attempting sign-in with custom token...");
                         firebaseStatusMessage.textContent = "Tentative de connexion avec un jeton personnalisé...";
                         firebaseStatusMessage.style.backgroundColor = '#cce5ff'; // Pale blue
                         firebaseStatusMessage.style.color = '#004085'; // Darker blue
@@ -659,7 +660,7 @@
                     }
                 }
             } catch (error) {
-                console.error("Error initializing Firebase or signing in:", error);
+                console.error("[Firebase Init] Error initializing Firebase or signing in:", error);
                 firebaseStatusMessage.textContent = `Erreur d'initialisation de Firebase : ${error.message}.`;
                 firebaseStatusMessage.style.backgroundColor = '#f8d7da'; // Light red
                 firebaseStatusMessage.style.color = '#721c24'; // Dark red
@@ -706,6 +707,9 @@
             rockBtn.disabled = false; // Réactiver l'attribut disabled pour les boutons de choix
             paperBtn.disabled = false;
             scissorsBtn.disabled = false;
+            rockBtn.style.pointerEvents = 'auto'; // Réactiver pointer-events
+            paperBtn.style.pointerEvents = 'auto';
+            scissorsBtn.style.pointerEvents = 'auto';
             // Réinitialiser les styles de sélection
             rockBtn.classList.remove('ring-4', 'ring-purple-400');
             paperBtn.classList.remove('ring-4', 'ring-purple-400');
@@ -719,6 +723,9 @@
             rockBtn.disabled = true; // Désactiver l'attribut disabled pour les boutons de choix
             paperBtn.disabled = true;
             scissorsBtn.disabled = true;
+            rockBtn.style.pointerEvents = 'none'; // Désactiver pointer-events
+            paperBtn.style.pointerEvents = 'none';
+            scissorsBtn.style.pointerEvents = 'none';
         }
 
         function enableChoiceButtons() {
@@ -728,6 +735,9 @@
             rockBtn.disabled = false; // Réactiver l'attribut disabled pour les boutons de choix
             paperBtn.disabled = false;
             scissorsBtn.disabled = false;
+            rockBtn.style.pointerEvents = 'auto'; // Réactiver pointer-events
+            paperBtn.style.pointerEvents = 'auto';
+            scissorsBtn.style.pointerEvents = 'auto';
         }
 
         function showGameOverModal(winnerName) {
@@ -757,7 +767,7 @@
         }
 
         function disableSettingsInputs() {
-            console.log("disableSettingsInputs called.");
+            console.log("[UI] disableSettingsInputs called.");
             playerNameInput.disabled = true;
             scoreTargetMinusBtn.disabled = true;
             scoreTargetPlusBtn.disabled = true;
@@ -768,12 +778,20 @@
             // Ajouter des classes Tailwind pour l'opacité et le curseur
             createGameBtn.classList.add('opacity-50', 'cursor-not-allowed');
             joinGameBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            scoreTargetMinusBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            scoreTargetPlusBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            console.log(`State after disable: CreateBtn disabled=${createGameBtn.disabled}, JoinBtn disabled=${joinGameBtn.disabled}`);
+            // Désactiver pointer-events
+            createGameBtn.style.pointerEvents = 'none';
+            joinGameBtn.style.pointerEvents = 'none';
+            scoreTargetMinusBtn.style.pointerEvents = 'none';
+            scoreTargetPlusBtn.style.pointerEvents = 'none';
+
+            console.log(`[UI] State after disable: CreateBtn disabled=${createGameBtn.disabled}, JoinBtn disabled=${joinGameBtn.disabled}`);
         }
 
         function enableSettingsInputs() {
-            console.log("enableSettingsInputs called.");
+            console.log("[UI] enableSettingsInputs called.");
             playerNameInput.disabled = false;
             scoreTargetMinusBtn.disabled = false;
             scoreTargetPlusBtn.disabled = false;
@@ -784,14 +802,22 @@
             // Retirer les classes Tailwind pour l'opacité et le curseur
             createGameBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             joinGameBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            scoreTargetMinusBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            scoreTargetPlusBtn.classList.remove('opacity-50', 'cursor-not-allowed');
 
-            console.log(`State after enable: CreateBtn disabled=${createGameBtn.disabled}, JoinBtn disabled=${joinGameBtn.disabled}`);
+            // Réactiver pointer-events
+            createGameBtn.style.pointerEvents = 'auto';
+            joinGameBtn.style.pointerEvents = 'auto';
+            scoreTargetMinusBtn.style.pointerEvents = 'auto';
+            scoreTargetPlusBtn.style.pointerEvents = 'auto';
+
+            console.log(`[UI] State after enable: CreateBtn disabled=${createGameBtn.disabled}, JoinBtn disabled=${joinGameBtn.disabled}`);
         }
 
         // --- Game Lobby Functions ---
         async function createGame() {
             if (!db || !userId) {
-                console.error("Firebase not initialized or userId not set. Cannot create game.");
+                console.error("[Game Lobby] Firebase not initialized or userId not set. Cannot create game.");
                 firebaseStatusMessage.textContent = "Erreur: Firebase non initialisé ou utilisateur non connecté.";
                 firebaseStatusMessage.style.backgroundColor = '#f8d7da';
                 firebaseStatusMessage.style.color = '#721c24';
@@ -804,6 +830,7 @@
 
             try {
                 disableSettingsInputs(); // Disable buttons immediately to prevent double-clicks
+                console.log(`[Game Lobby] Creating game ${gameId} with player1Id: ${userId}, player1Name: ${playerName}`);
                 await setDoc(gameRef, {
                     player1Id: userId,
                     player1Name: playerName,
@@ -820,11 +847,11 @@
                 });
                 localPlayerId = 'player1';
                 currentGameIdSpan.textContent = gameId; // Set ID here
-                console.log("Game created with ID:", gameId);
+                console.log("[Game Lobby] Game created, starting listener.");
                 listenToGameChanges(gameId); // Start listening for changes
                 // updateGameUI will now handle showing the game page with ID
             } catch (e) {
-                console.error("Error creating game:", e);
+                console.error("[Game Lobby] Error creating game:", e);
                 gameMessage.textContent = "Erreur lors de la création de la partie.";
                 enableSettingsInputs(); // Re-enable buttons if creation failed
             }
@@ -832,7 +859,7 @@
 
         async function joinGame() {
             if (!db || !userId) {
-                console.error("joinGame: Firebase not initialized or userId not set. Cannot join game.");
+                console.error("[Game Lobby] joinGame: Firebase not initialized or userId not set. Cannot join game.");
                 firebaseStatusMessage.textContent = "Erreur: Firebase non initialisé ou utilisateur non connecté.";
                 firebaseStatusMessage.style.backgroundColor = '#f8d7da';
                 firebaseStatusMessage.style.color = '#721c24';
@@ -842,12 +869,12 @@
             const gameId = gameIdInput.value.trim();
             if (!gameId) {
                 gameMessage.textContent = "Veuillez saisir un ID de partie.";
-                console.log("joinGame: No game ID provided.");
+                console.log("[Game Lobby] joinGame: No game ID provided.");
                 return;
             }
 
             gameRef = doc(db, `artifacts/${firestoreAppId}/public/data/games`, gameId);
-            console.log("joinGame: Attempting to get game document for ID:", gameId);
+            console.log("[Game Lobby] joinGame: Attempting to get game document for ID:", gameId);
             
             try {
                 disableSettingsInputs(); // Disable buttons immediately
@@ -855,12 +882,12 @@
 
                 if (gameSnap.exists()) {
                     const data = gameSnap.data();
-                    console.log("joinGame: Game document exists. Data:", data);
+                    console.log("[Game Lobby] joinGame: Game document exists. Data:", data);
 
                     // Check if current user is already player1 or player2
                     if (data.player1Id === userId || data.player2Id === userId) {
                         localPlayerId = (data.player1Id === userId) ? 'player1' : 'player2';
-                        console.log("joinGame: Rejoining own game as:", localPlayerId);
+                        console.log("[Game Lobby] joinGame: Rejoining own game as:", localPlayerId);
                         gameMessage.textContent = "Reconnexion à la partie...";
                         listenToGameChanges(gameId);
                         // UI will be updated by onSnapshot
@@ -870,14 +897,14 @@
                     // Check if both player slots are taken by *other* users
                     if (data.player1Id && data.player2Id && data.player1Id !== userId && data.player2Id !== userId) {
                         gameMessage.textContent = "Cette partie est déjà pleine ou en cours.";
-                        console.log("joinGame: Game is full and current user is not part of it.");
+                        console.log("[Game Lobby] joinGame: Game is full and current user is not part of it.");
                         enableSettingsInputs(); // Re-enable if game is full
                         return;
                     }
                     
                     // If player2 slot is empty, join as player2
                     if (!data.player2Id) {
-                        console.log("joinGame: Slot for player2 is available.");
+                        console.log("[Game Lobby] joinGame: Slot for player2 is available. Updating Firestore...");
                         const playerName = playerNameInput.value.trim() || 'Joueur';
                         await setDoc(gameRef, {
                             player2Id: userId,
@@ -885,21 +912,21 @@
                             status: 'playing' // Game starts when 2nd player joins
                         }, { merge: true }); // Merge to update specific fields
                         localPlayerId = 'player2';
-                        console.log("joinGame: Successfully joined game as player2:", gameId);
+                        console.log("[Game Lobby] joinGame: Successfully joined game as player2:", gameId);
                         listenToGameChanges(gameId); // Start listening for changes
                         // UI will be updated by onSnapshot
                     } else {
                         gameMessage.textContent = "Cette partie est déjà pleine.";
-                        console.log("joinGame: Game is already full.");
+                        console.log("[Game Lobby] joinGame: Game is already full.");
                         enableSettingsInputs(); // Re-enable if game is full
                     }
                 } else {
                     gameMessage.textContent = "Partie introuvable. Vérifie l'ID.";
-                    console.log("joinGame: Game document does not exist for ID:", gameId);
+                    console.log("[Game Lobby] joinGame: Game document does not exist for ID:", gameId);
                     enableSettingsInputs(); // Re-enable if game not found
                 }
             } catch (error) {
-                console.error("joinGame: Error during join process (permissions?).", error);
+                console.error("[Game Lobby] joinGame: Error during join process (permissions?).", error);
                 gameMessage.textContent = "Erreur lors de la tentative de rejoindre la partie (permissions?).";
                 enableSettingsInputs(); // Re-enable buttons if an error occurred
             }
@@ -908,38 +935,45 @@
         // --- Real-time Game Logic with Firestore Listener ---
         function listenToGameChanges(gameId) {
             if (unsubscribeFromGame) {
+                console.log("[Firestore Listener] Unsubscribing from previous game listener.");
                 unsubscribeFromGame(); // Unsubscribe from previous game if any
             }
             gameRef = doc(db, `artifacts/${firestoreAppId}/public/data/games`, gameId);
+            console.log(`[Firestore Listener] Setting up onSnapshot for game ID: ${gameId}`);
             unsubscribeFromGame = onSnapshot(gameRef, (docSnap) => {
+                console.log("[Firestore Listener] onSnapshot triggered!");
+                console.log(`[Firestore Listener] docSnap.exists(): ${docSnap.exists()}`);
                 if (docSnap.exists()) {
                     gameData = docSnap.data();
-                    console.log("Game data updated by onSnapshot:", gameData);
+                    console.log("[Firestore Listener] Game data received:", JSON.stringify(gameData));
                     updateGameUI(); // Update UI based on new gameData
                 } else {
-                    console.log("Game deleted or not found by onSnapshot.");
+                    console.log("[Firestore Listener] Game deleted or not found by onSnapshot.");
                     gameMessage.textContent = "La partie a été supprimée ou n'existe plus.";
                     interruptGame(); // Go back to settings if game disappears
                 }
             }, (error) => {
-                console.error("Error listening to game changes:", error);
+                console.error("[Firestore Listener] Error listening to game changes:", error);
                 gameMessage.textContent = "Erreur de synchronisation de la partie.";
             });
         }
 
         function updateGameUI() {
             if (!gameData || !userId) {
-                console.log("updateGameUI: gameData or userId not available. Skipping UI update.");
+                console.log("[UI Update] gameData or userId not available. Skipping UI update.");
                 return;
             }
 
-            console.log("--- updateGameUI called ---");
-            console.log("localPlayerId (before determination):", localPlayerId);
-            console.log("Current userId:", userId);
-            console.log("gameData.status:", gameData.status);
-            console.log("gameData.currentPlayerTurn:", gameData.currentPlayerTurn);
-            console.log("gameData.player1Id:", gameData.player1Id);
-            console.log("gameData.player2Id:", gameData.player2Id);
+            console.log("--- [UI Update] updateGameUI called ---");
+            console.log(`[UI Update] localPlayerId (before determination): ${localPlayerId}`);
+            console.log(`[UI Update] Current userId: ${userId}`);
+            console.log(`[UI Update] gameData.status: ${gameData.status}`);
+            console.log(`[UI Update] gameData.currentPlayerTurn: ${gameData.currentPlayerTurn}`);
+            console.log(`[UI Update] gameData.player1Id: ${gameData.player1Id}`);
+            console.log(`[UI Update] gameData.player2Id: ${gameData.player2Id}`);
+            console.log(`[UI Update] gameData.player1Choice: ${gameData.player1Choice}`);
+            console.log(`[UI Update] gameData.player2Choice: ${gameData.player2Choice}`);
+
 
             // Determine if current user is player1 or player2 in the gameData
             const isPlayer1 = gameData.player1Id === userId;
@@ -953,10 +987,10 @@
                 } else if (isPlayer2) {
                     localPlayerId = 'player2';
                 }
-                console.log("localPlayerId (after determination):", localPlayerId);
+                console.log(`[UI Update] localPlayerId (after determination): ${localPlayerId}`);
             }
-            console.log("Is current user player1?", isPlayer1);
-            console.log("Is current user player2?", isPlayer2);
+            console.log(`[UI Update] Is current user player1? ${isPlayer1}`);
+            console.log(`[UI Update] Is current user player2? ${isPlayer2}`);
 
 
             // Update player names and scores
@@ -973,10 +1007,12 @@
 
             // Update duel area
             if (gameData.player1Choice && gameData.player2Choice) {
+                console.log("[UI Update] Both choices made. Showing duel area.");
                 duelArea.classList.remove('hidden');
                 player1DuelChoice.textContent = choices[gameData.player1Choice].emoji;
                 player2DuelChoice.textContent = choices[gameData.player2Choice].emoji;
             } else {
+                console.log("[UI Update] Not both choices made. Hiding duel area.");
                 duelArea.classList.add('hidden');
                 player1DuelChoice.textContent = '?';
                 player2DuelChoice.textContent = '?';
@@ -984,6 +1020,7 @@
 
             // Handle game status transitions
             if (gameData.status === 'waitingForPlayer2') {
+                console.log("[UI Update] Game status: waitingForPlayer2");
                 showPage('game-page'); // SHOW GAME PAGE
                 resetRoundUI(); // Ensure choice buttons are disabled and UI is clean
                 gameIdDisplay.classList.remove('hidden'); // Ensure ID is visible
@@ -995,69 +1032,69 @@
                 // Ensure settings inputs are disabled when on game page waiting for opponent
                 disableSettingsInputs(); // Keep settings inputs disabled
             } else if (gameData.status === 'playing') {
+                console.log("[UI Update] Game status: playing");
                 waitingForOpponentMessage.textContent = ''; // Clear waiting message
                 gameIdDisplay.classList.add('hidden'); // Hide game ID once game starts
                 showPage('game-page'); // Ensure game page is visible
-                resetRoundUI(); // Reset UI for new round
+                resetRoundUI(); // Reset UI for new round (this will enable buttons initially)
 
-                const isMyTurn = (localPlayerId === 'player1' && gameData.currentPlayerTurn === 'player1') ||
-                                 (localPlayerId === 'player2' && gameData.currentPlayerTurn === 'player2');
+                const myCurrentChoice = gameData[localPlayerId + 'Choice'];
+                const opponentCurrentChoice = gameData[(localPlayerId === 'player1' ? 'player2' : 'player1') + 'Choice'];
+                const opponentName = localPlayerId === 'player1' ? gameData.player2Name : gameData.player1Name;
+                const myName = localPlayerId === 'player1' ? gameData.player1Name : gameData.player2Name;
 
-                console.log("isMyTurn:", isMyTurn);
-
-                // Highlight current player's name
+                // Always update whose turn it is in the UI based on Firestore's currentPlayerTurn
+                // This indicates who has the 'initiative' for the round, or who is Player 1/Player 2.
                 if (gameData.currentPlayerTurn === 'player1') {
+                    currentPlayerTurn.textContent = `Tour de ${gameData.player1Name} !`; // Changed message to be less prescriptive for action
                     player1NameDisplay.classList.add('text-purple-700', 'border-b-2', 'border-purple-700');
+                    player2NameDisplay.classList.remove('text-purple-700', 'border-b-2', 'border-purple-700');
                 } else if (gameData.currentPlayerTurn === 'player2') {
+                    currentPlayerTurn.textContent = `Tour de ${gameData.player2Name} !`; // Changed message
                     player2NameDisplay.classList.add('text-purple-700', 'border-b-2', 'border-purple-700');
+                    player1NameDisplay.classList.remove('text-purple-700', 'border-b-2', 'border-purple-700');
                 }
 
-
-                if (isMyTurn) {
-                    currentPlayerTurn.textContent = `C'est à ton tour, ${gameData[localPlayerId + 'Name']} !`;
-                    gameMessage.textContent = "Fais ton choix !";
-                    enableChoiceButtons();
-                    // Remove highlight from previously chosen button
-                    rockBtn.classList.remove('ring-4', 'ring-purple-400');
-                    paperBtn.classList.remove('ring-4', 'ring-purple-400');
-                    scissorsBtn.classList.remove('ring-4', 'ring-purple-400');
-                } else {
-                    const opponentName = localPlayerId === 'player1' ? gameData.player2Name : gameData.player1Name;
-                    currentPlayerTurn.textContent = `C'est au tour de ${opponentName || 'ton adversaire'}...`;
-                    gameMessage.textContent = "En attente du choix de l'adversaire...";
-                    disableChoiceButtons();
-                }
-
-                // If both players have made a choice, trigger playRound logic
+                // Logic for button enablement and game messages
                 if (gameData.player1Choice && gameData.player2Choice) {
-                    console.log("Both players have chosen. Calling playRound.");
-                    playRound();
+                    // Both players have chosen, process the round
+                    console.log("[UI Update] Both players have chosen. Calling playRound.");
+                    playRound(); // This will update scores, reset choices, and change currentPlayerTurn in Firestore
+                    disableChoiceButtons(); // Disable buttons while round is being processed
+                    gameMessage.textContent = "Calcul des résultats...";
+                } else if (myCurrentChoice) {
+                    // I have made my choice, waiting for opponent
+                    console.log(`[UI Update] My choice (${myCurrentChoice}) is made. Waiting for opponent.`);
+                    disableChoiceButtons();
+                    document.getElementById(`${myCurrentChoice}-btn`).classList.add('ring-4', 'ring-purple-400');
+                    gameMessage.textContent = `Ton choix est fait : ${choices[myCurrentChoice].name}. En attente de ${opponentName}...`;
+                } else if (opponentCurrentChoice) {
+                    // Opponent has made their choice, and I haven't yet. It's my turn to choose.
+                    console.log(`[UI Update] Opponent (${opponentName}) has chosen. It's my turn to choose.`);
+                    enableChoiceButtons();
+                    gameMessage.textContent = `Ton adversaire a fait son choix. Fais le tien !`;
                 } else {
-                    // Ensure buttons are correctly enabled/disabled based on current player's choice status
-                    const myChoice = gameData[localPlayerId + 'Choice'];
-                    if (myChoice) {
-                        console.log("My choice is already made:", myChoice);
-                        disableChoiceButtons();
-                        document.getElementById(`${myChoice}-btn`).classList.add('ring-4', 'ring-purple-400');
-                        gameMessage.textContent = `Ton choix est fait : ${choices[myChoice].name}. En attente de l'adversaire...`;
-                    } else if (isMyTurn) {
-                        console.log("It's my turn and I haven't chosen. Enabling buttons.");
-                        enableChoiceButtons();
-                    }
+                    // Neither has chosen yet. It's my turn to choose.
+                    console.log("[UI Update] Neither has chosen. It's my turn to initiate choice.");
+                    enableChoiceButtons();
+                    gameMessage.textContent = "Fais ton choix !";
                 }
 
             } else if (gameData.status === 'gameOver') {
+                console.log("[UI Update] Game status: gameOver");
                 waitingForOpponentMessage.textContent = '';
                 gameIdDisplay.classList.add('hidden');
                 disableChoiceButtons();
                 showGameOverModal(gameData.winner);
             }
-            console.log("--- updateGameUI finished ---");
+            console.log("--- [UI Update] updateGameUI finished ---");
         }
 
         // This function is now called when both choices are available in Firestore
         async function playRound() {
             if (gameTimeout) clearTimeout(gameTimeout);
+            console.log("[Play Round] Starting playRound function.");
+            console.log(`[Play Round] Player1 Choice: ${gameData.player1Choice}, Player2 Choice: ${gameData.player2Choice}`);
 
             const winner = determineWinner(gameData.player1Choice, gameData.player2Choice);
             let message = '';
@@ -1069,20 +1106,23 @@
                 message = `${gameData.player1Name} gagne ce tour !`;
                 gameMessage.style.color = '#2e7d32'; // Vert
                 gameMessage.style.backgroundColor = '#e8f5e9';
+                console.log(`[Play Round] Winner: Joueur 1 (${gameData.player1Name})`);
             } else if (winner === 'Joueur 2') {
                 newPlayer2Score++;
                 message = `${gameData.player2Name} gagne ce tour !`;
                 gameMessage.style.color = '#d32f2f'; // Rouge
                 gameMessage.style.backgroundColor = '#ffebee';
+                console.log(`[Play Round] Winner: Joueur 2 (${gameData.player2Name})`);
             } else {
                 message = 'Égalité !';
                 gameMessage.style.color = '#555'; // Gris
                 gameMessage.style.backgroundColor = '#ecf0f1';
+                console.log("[Play Round] Winner: Égalité");
             }
             gameMessage.textContent = message;
             duelArea.classList.remove('hidden'); // Ensure duel area is visible
 
-            // Update scores and choices in Firestore
+            console.log(`[Play Round] Updating scores in Firestore: P1 Score: ${newPlayer1Score}, P2 Score: ${newPlayer2Score}`);
             await setDoc(gameRef, {
                 player1Score: newPlayer1Score,
                 player2Score: newPlayer2Score,
@@ -1090,47 +1130,51 @@
                 player2Choice: null,
                 lastUpdated: Date.now()
             }, { merge: true });
+            console.log("[Play Round] Scores and choices reset in Firestore.");
 
             // Check for game over condition
             if (newPlayer1Score >= gameData.scoreTarget || newPlayer2Score >= gameData.scoreTarget) {
                 let finalWinner = '';
                 if (newPlayer1Score >= gameData.scoreTarget && newPlayer2Score >= gameData.scoreTarget) {
                     finalWinner = 'Égalité';
+                    console.log("[Play Round] Game Over: Tie.");
                 } else if (newPlayer1Score >= gameData.scoreTarget) {
                     finalWinner = gameData.player1Name;
+                    console.log(`[Play Round] Game Over: ${finalWinner} wins.`);
                 } else {
                     finalWinner = gameData.player2Name;
+                    console.log(`[Play Round] Game Over: ${finalWinner} wins.`);
                 }
                 await setDoc(gameRef, { status: 'gameOver', winner: finalWinner }, { merge: true });
+                console.log("[Play Round] Game status set to gameOver in Firestore.");
                 // showGameOverModal will be called by onSnapshot listener
             } else {
                 // Determine next player's turn
                 const nextPlayerTurn = (gameData.currentPlayerTurn === 'player1') ? 'player2' : 'player1';
+                console.log(`[Play Round] Next player turn: ${nextPlayerTurn}`);
                 await setDoc(gameRef, { currentPlayerTurn: nextPlayerTurn }, { merge: true });
+                console.log("[Play Round] currentPlayerTurn updated in Firestore.");
 
                 gameTimeout = setTimeout(() => {
+                    console.log("[Play Round] Timeout finished. UI should update via onSnapshot.");
                     // UI will be reset by onSnapshot when currentPlayerTurn changes
-                }, 3000);
+                }, 5000); // Changed from 3000 to 5000 milliseconds for 5 seconds
             }
         }
 
         // --- Player Actions (update Firestore) ---
         async function handlePlayerChoice(choice) {
             if (!gameRef || !localPlayerId || gameData.status !== 'playing') {
-                console.warn("Cannot make choice: Game not active or not your turn.");
+                console.warn("[Player Action] Cannot make choice: Game not active or not your turn.");
+                gameMessage.textContent = "La partie n'est pas active ou il y a un problème."; // More generic message
                 return;
             }
 
-            // Prevent choosing if it's not the current player's turn
-            if ((localPlayerId === 'player1' && gameData.currentPlayerTurn !== 'player1') ||
-                (localPlayerId === 'player2' && gameData.currentPlayerTurn !== 'player2')) {
-                gameMessage.textContent = "Ce n'est pas ton tour !";
-                return;
-            }
-
-            // Prevent choosing if player has already chosen
+            // Removed the check for gameData.currentPlayerTurn.
+            // Both players can make a choice for the current round as long as they haven't already.
             if (gameData[localPlayerId + 'Choice'] !== null) {
                 gameMessage.textContent = "Tu as déjà fait ton choix pour ce tour.";
+                console.warn("[Player Action] Already made choice this round.");
                 return;
             }
 
@@ -1138,29 +1182,34 @@
             const update = {};
             update[localPlayerId + 'Choice'] = choice;
             update.lastUpdated = Date.now();
+            console.log(`[Player Action] Player ${localPlayerId} choosing ${choice}. Updating Firestore...`);
 
             try {
                 await setDoc(gameRef, update, { merge: true });
                 playerChoiceFeedback.textContent = `Ton choix est fait : ${choices[choice].name}. En attente de l'adversaire...`;
-                disableChoiceButtons();
+                disableChoiceButtons(); // Disable buttons immediately after choice
                 document.getElementById(`${choice}-btn`).classList.add('ring-4', 'ring-purple-400');
+                console.log(`[Player Action] Choice ${choice} successfully written to Firestore.`);
             } catch (e) {
-                console.error("Error setting player choice:", e);
+                console.error("[Player Action] Error setting player choice:", e);
                 gameMessage.textContent = "Erreur lors de l'enregistrement de ton choix.";
             }
         }
 
         async function interruptGame() {
             if (gameTimeout) clearTimeout(gameTimeout);
-            if (unsubscribeFromGame) unsubscribeFromGame(); // Stop listening to game changes
+            if (unsubscribeFromGame) {
+                unsubscribeFromGame(); // Stop listening to game changes
+                console.log("[Interrupt] Unsubscribed from game changes.");
+            }
 
             // Optionally, delete the game from Firestore if it's the creator leaving
             if (gameRef && gameData && gameData.player1Id === userId) {
                 try {
                     // await deleteDoc(gameRef); // Uncomment if you want to delete the game on interrupt by player1
-                    console.log("Game interrupted and (optionally) deleted from Firestore.");
+                    console.log("[Interrupt] Game interrupted and (optionally) deleted from Firestore.");
                 } catch (e) {
-                    console.error("Error deleting game:", e);
+                    console.error("[Interrupt] Error deleting game:", e);
                 }
             }
 
@@ -1180,24 +1229,24 @@
             updateScoreTargetDisplay(); // Update display with reset score target
             showPage('settings-page');
             gameMessage.textContent = "Partie interrompue. Crée ou rejoins une nouvelle partie.";
+            console.log("[Interrupt] Game state reset and returned to settings page.");
         }
 
 
         // --- Event Listeners ---
-        scoreTargetMinusBtn.addEventListener('click', () => {
-            if (scoreTarget > 1) {
-                scoreTarget--;
-                updateScoreTargetDisplay();
-            }
-        });
+        // Attaching both click and touchstart listeners for robustness on mobile
+        scoreTargetMinusBtn.addEventListener('click', () => { if (scoreTarget > 1) { scoreTarget--; updateScoreTargetDisplay(); } });
+        scoreTargetMinusBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (scoreTarget > 1) { scoreTarget--; updateScoreTargetDisplay(); } });
 
-        scoreTargetPlusBtn.addEventListener('click', () => {
-            scoreTarget++;
-            updateScoreTargetDisplay();
-        });
+        scoreTargetPlusBtn.addEventListener('click', () => { scoreTarget++; updateScoreTargetDisplay(); });
+        scoreTargetPlusBtn.addEventListener('touchstart', (e) => { e.preventDefault(); scoreTarget++; updateScoreTargetDisplay(); });
 
         createGameBtn.addEventListener('click', createGame);
+        createGameBtn.addEventListener('touchstart', (e) => { e.preventDefault(); createGame(); });
+
         joinGameBtn.addEventListener('click', joinGame);
+        joinGameBtn.addEventListener('touchstart', (e) => { e.preventDefault(); joinGame(); });
+
         copyGameIdBtn.addEventListener('click', () => {
             const gameId = currentGameIdSpan.textContent;
             // Using document.execCommand('copy') for better compatibility in iframes
@@ -1209,10 +1258,27 @@
             alert('ID de partie copié !'); // Consider replacing with a custom modal/toast
             document.body.removeChild(tempInput); // Remove after copy
         });
+        copyGameIdBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const gameId = currentGameIdSpan.textContent;
+            const tempInput = document.createElement('textarea');
+            tempInput.value = gameId;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            alert('ID de partie copié !');
+            document.body.removeChild(tempInput);
+        });
+
 
         rockBtn.addEventListener('click', () => handlePlayerChoice('rock'));
+        rockBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePlayerChoice('rock'); });
+
         paperBtn.addEventListener('click', () => handlePlayerChoice('paper'));
+        paperBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePlayerChoice('paper'); });
+
         scissorsBtn.addEventListener('click', () => handlePlayerChoice('scissors'));
+        scissorsBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePlayerChoice('scissors'); });
 
         replayBtn.addEventListener('click', () => {
             hideGameOverModal();
@@ -1228,15 +1294,37 @@
                     winner: null,
                     lastUpdated: Date.now()
                 }, { merge: true }).then(() => {
-                    console.log("Game reset in Firestore.");
+                    console.log("[Replay] Game reset in Firestore.");
                 }).catch(e => {
-                    console.error("Error resetting game in Firestore:", e);
+                    console.error("[Replay] Error resetting game in Firestore:", e);
                 });
             }
             // UI will update via onSnapshot
         });
+        replayBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            hideGameOverModal();
+            if (gameRef && gameData) {
+                setDoc(gameRef, {
+                    player1Score: 0,
+                    player2Score: 0,
+                    player1Choice: null,
+                    player2Choice: null,
+                    status: 'playing',
+                    currentPlayerTurn: 'player1',
+                    winner: null,
+                    lastUpdated: Date.now()
+                }, { merge: true }).then(() => {
+                    console.log("[Replay] Game reset in Firestore.");
+                }).catch(e => {
+                    console.error("[Replay] Error resetting game in Firestore:", e);
+                });
+            }
+        });
+
 
         interruptGameBtn.addEventListener('click', interruptGame);
+        interruptGameBtn.addEventListener('touchstart', (e) => { e.preventDefault(); interruptGame(); });
 
         // Initialisation : Appeler initializeFirebase au chargement de la fenêtre
         // Le reste de l'initialisation UI se fera via onAuthStateChanged

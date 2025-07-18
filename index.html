@@ -397,6 +397,22 @@
             margin-top: 1rem;
             font-size: 1rem;
         }
+
+        /* Styles pour l'indicateur de tour principal (bleu) */
+        .turn-indicator {
+            box-shadow: 0 0 15px 5px var(--color-sky-blue); /* Lumière bleue */
+            border-radius: 0.75rem; /* Arrondir légèrement les coins du glow */
+            padding: 0.5rem 1rem;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        /* Nouveau style pour l'indicateur de cible (rouge brillant) */
+        .target-indicator {
+            box-shadow: 0 0 15px 5px var(--color-fire-red); /* Rouge vif */
+            border-radius: 0.75rem;
+            padding: 0.5rem 1rem;
+            transition: box-shadow 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -419,7 +435,7 @@
     <div id="game-container" class="hidden"> <!-- Cacher le conteneur du jeu au démarrage -->
         <!-- Ma Grille (pour visualiser mes bateaux et placer) -->
         <div class="flex flex-col items-center">
-            <h2 class="text-2xl font-semibold mb-4">Ma Grille</h2>
+            <h2 id="my-grid-title" class="text-2xl font-semibold mb-4">Ma Grille</h2>
             <div id="my-grid" class="grid-container">
                 <!-- Les cellules de la grille seront générées ici par JS -->
             </div>
@@ -427,7 +443,7 @@
 
         <!-- Grille de l'Adversaire (pour tirer) - cachée pendant le placement -->
         <div class="flex flex-col items-center hidden" id="opponent-grid-section">
-            <h2 class="text-2xl font-semibold mb-4">Grille de l'Adversaire</h2>
+            <h2 id="opponent-grid-title" class="text-2xl font-semibold mb-4">Grille de l'Adversaire</h2>
             <div id="opponent-grid" class="grid-container">
                 <!-- Les cellules de la grille seront générées ici par JS -->
             </div>
@@ -459,7 +475,7 @@
     <!-- Bouton Rejouer (caché par défaut) -->
     <button id="replay-button" class="hidden">Rejouer</button>
 
-    <div id="version-info">Version: 1.0.25</div>
+    <div id="version-info">Version: 1.0.27</div>
 
     <!-- Firebase SDKs -->
     <script type="module">
@@ -480,6 +496,10 @@
         const validatePlacementButton = document.getElementById('validate-placement-btn');
         const simulationButtonsContainer = document.querySelector('.simulation-buttons');
         const replayButton = document.getElementById('replay-button');
+
+        // Nouveaux éléments pour l'indicateur de tour
+        const myGridTitle = document.getElementById('my-grid-title');
+        const opponentGridTitle = document.getElementById('opponent-grid-title');
 
         // Éléments du lobby multijoueur
         const multiplayerLobby = document.getElementById('multiplayer-lobby');
@@ -752,6 +772,9 @@
             // Réinitialise l'affichage des grilles
             myGridElement.innerHTML = '';
             opponentGridElement.innerHTML = '';
+            // Réinitialise les indicateurs de tour
+            myGridTitle.classList.remove('turn-indicator', 'target-indicator');
+            opponentGridTitle.classList.remove('turn-indicator', 'target-indicator');
         }
 
         /**
@@ -792,6 +815,10 @@
 
             // Met à jour l'affichage de l'ID de partie
             multiplayerInfo.textContent = `Partie ID: ${currentGameId} | Joueur ${currentPlayerNumber}`;
+
+            // Réinitialise tous les indicateurs de tour avant d'appliquer les nouveaux
+            myGridTitle.classList.remove('turn-indicator', 'target-indicator');
+            opponentGridTitle.classList.remove('turn-indicator', 'target-indicator');
 
             // Logique d'affichage basée sur le statut de la partie
             switch (gameData.status) {
@@ -838,9 +865,13 @@
 
                     if (gameData.currentPlayerTurn === currentUserId) {
                         gameMessageElement.textContent = "C'est ton tour ! Clique sur la grille de l'adversaire pour tirer.";
+                        myGridTitle.classList.add('turn-indicator'); // Indicateur bleu sur ma grille
+                        opponentGridTitle.classList.add('target-indicator'); // Indicateur rouge sur la grille adverse
                         opponentGridElement.style.pointerEvents = 'auto'; // Active les clics sur la grille adverse
                     } else {
                         gameMessageElement.textContent = "C'est le tour de l'adversaire...";
+                        opponentGridTitle.classList.add('turn-indicator'); // Indicateur bleu sur la grille adverse (pour montrer que c'est leur tour)
+                        myGridTitle.classList.remove('target-indicator'); // S'assurer que ma grille n'a pas l'indicateur rouge
                         opponentGridElement.style.pointerEvents = 'none'; // Désactive les clics sur la grille adverse
                     }
                     break;
@@ -1183,10 +1214,11 @@
                 await updateGameInFirestore(updates);
 
                 // Vérifier si les deux joueurs ont terminé leur placement
-                const updatedGameData = (await getDoc(doc(db, `artifacts/${appId}/public/data/battleship_games`, currentGameId))).data();
+                const docSnap = await getDoc(doc(db, `artifacts/${appId}/public/data/battleship_games`, currentGameId));
+                const updatedGameData = docSnap.data();
                 // Désérialiser les données pour la vérification
-                updatedGameData.player1Ships = JSON.parse(updatedGameData.player1Ships);
-                updatedGameData.player2Ships = JSON.parse(updatedGameData.player2Ships);
+                const player1ShipsParsed = JSON.parse(updatedGameData.player1Ships);
+                const player2ShipsParsed = JSON.parse(updatedGameData.player2Ships);
 
 
                 if (updatedGameData.player1PlacementDone && updatedGameData.player2PlacementDone) {

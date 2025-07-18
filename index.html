@@ -3,1419 +3,1372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pierre-Feuille-Ciseaux</title>
-    <!-- Favicon: Emoji Pierre (✊) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✊</text></svg>">
-    <!-- Tailwind CSS CDN -->
+    <title>Bataille Navale - Multijoueur</title>
+    <!-- Favicon emoji 💥 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💥</text></svg>">
+    <!-- Tailwind CSS CDN pour un stylisme rapide et responsive -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Patrick Hand for a childlike feel -->
-    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Styles personnalisés pour l'ambiance pastel et la typographie */
+        /* Configuration de Tailwind pour les couleurs personnalisées et les animations */
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+
+        :root {
+            --color-deep-blue: #001F3F; /* Bleu marine très foncé */
+            --color-ocean-blue: #0074D9; /* Bleu océan vif */
+            --color-sky-blue: #7FDBFF; /* Bleu ciel clair */
+            --color-steel-gray: #6C7A89; /* Gris acier */
+            --color-slate-gray: #34495E; /* Gris ardoise */
+            --color-fire-red: #FF4136; /* Rouge feu */
+            --color-burnt-orange: #FF851B; /* Orange brûlé */
+
+            /* Nouvelles couleurs pour les grilles */
+            --color-player-grid-water: #6CB6D9; /* Bleu plus clair pour la grille du joueur */
+            --color-opponent-grid-water: #0074D9; /* Bleu océan pour la grille de l'adversaire */
+        }
+
         body {
-            font-family: 'Patrick Hand', cursive;
-            background: linear-gradient(135deg, #f0f9ff, #cbe8f9); /* Dégradé de fond pastel */
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, var(--color-sky-blue) 0%, var(--color-ocean-blue) 50%, var(--color-deep-blue) 100%);
             min-height: 100vh;
-            margin: 0;
-            color: #333;
-            padding: 1rem; /* Ajout d'un padding global pour éviter que le contenu ne colle aux bords */
-            box-sizing: border-box; /* S'assurer que le padding est inclus dans la taille */
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 2rem; /* Coins très arrondis */
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            max-width: 90%;
-            width: 500px; /* Largeur fixe pour les écrans plus grands */
-            text-align: center;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            box-sizing: border-box; /* Inclure padding et border dans la largeur/hauteur */
-        }
-
-        /* Ajustement de la largeur du conteneur pour les très petits écrans */
-        @media (max-width: 640px) { /* Applique ces styles pour les écrans jusqu'à 640px (taille sm de Tailwind) */
-            .container {
-                width: 100%; /* Occupe toute la largeur disponible */
-                max-width: none; /* Supprime la limite max-width pour ces écrans */
-                padding: 1.2rem; /* Réduit le padding pour maximiser l'espace */
-            }
-        }
-
-        h1 {
-            font-size: 2.5rem; /* Grande taille pour le titre */
-            color: #6a0572; /* Couleur vive pour le titre */
-            margin-bottom: 1.5rem;
-        }
-        h2 {
-            font-size: 1.8rem;
-            color: #4a0050;
-        }
-        .btn {
-            padding: 1rem 2rem;
-            border-radius: 1.5rem; /* Boutons très arrondis */
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-        }
-        .btn-primary {
-            background-color: #8e44ad; /* Violet pastel */
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #9b59b6; /* Violet plus clair au survol */
-        }
-        .btn-rock {
-            background-color: #ff7f50; /* Corail pastel */
-            color: white;
-        }
-        .btn-rock:hover {
-            background-color: #ff916d;
-        }
-        .btn-paper {
-            background-color: #6a5acd; /* Bleu-violet pastel */
-            color: white;
-        }
-        .btn-paper:hover {
-            background-color: #7b68ee;
-        }
-        .btn-scissors {
-            background-color: #20b2aa; /* Vert-bleu pastel */
-            color: white;
-        }
-        .btn-scissors:hover {
-            background-color: #2ecdc4;
-        }
-        /* Style pour le bouton d'interruption - plus discret et en bas */
-        .btn-interrupt {
-            background-color: transparent; /* Fond transparent */
-            color: #e74c3c; /* Texte rouge */
-            border: 2px solid #e74c3c; /* Bordure rouge */
-            font-size: 1rem; /* Taille plus petite */
-            padding: 0.5rem 1rem; /* Padding réduit */
-            border-radius: 0.75rem; /* Coins légèrement arrondis */
-            margin-top: 2rem; /* Plus de marge au-dessus */
-            box-shadow: none; /* Pas d'ombre */
-            width: auto; /* Largeur automatique */
-            align-self: center; /* Centre le bouton */
-        }
-        .btn-interrupt:hover {
-            background-color: #e74c3c; /* Fond rouge au survol */
-            color: white;
-            transform: none; /* Pas de transformation au survol */
-            box-shadow: none;
-        }
-
-
-        /* Force les 3 boutons de choix sur une seule ligne */
-        .choice-area .flex {
-            flex-wrap: nowrap; /* Empêche les boutons de passer à la ligne */
-            justify-content: center;
-            gap: 0.5rem; /* Réduit l'espace entre les boutons pour plus de compacité */
-        }
-        .choice-area button {
-            flex-basis: calc(33.33% - 0.33rem); /* Assure 3 boutons par ligne */
-            min-width: 80px; /* Largeur minimale pour éviter qu'ils ne soient trop petits */
-            font-size: 1.2rem; /* Taille de police légèrement réduite pour les petits écrans */
-            padding: 0.7rem 0.8rem; /* Réduit le padding des boutons */
-        }
-        /* Ajustement pour les très petits écrans si nécessaire, mais l'objectif est de les garder sur une ligne */
-        @media (max-width: 360px) {
-            .choice-area button {
-                font-size: 1.1rem;
-                padding: 0.6rem 0.7rem;
-            }
-        }
-        /* Icônes de choix dans les boutons */
-        .choice-button-icon {
-            font-size: 3rem; /* Taille des icônes dans les boutons */
-            line-height: 1; /* Assure que l'icône ne crée pas de hauteur supplémentaire inutile */
-            margin-bottom: 0; /* Pas de marge en bas si pas de texte */
-        }
-        /* Ajustement de la taille de l'icône pour les très petits écrans */
-        @media (max-width: 360px) {
-            .choice-button-icon {
-                font-size: 2.5rem;
-            }
-        }
-
-
-        .input-field {
-            padding: 0.8rem 1.2rem;
-            border-radius: 1rem;
-            border: 2px solid #ccc;
-            font-size: 1.2rem;
-            width: 100%;
-            max-width: 300px;
-            box-sizing: border-box;
-            margin-bottom: 1rem;
-            text-align: center;
-            font-family: 'Patrick Hand', cursive;
-            color: #333;
-        }
-        .input-field:focus {
-            outline: none;
-            border-color: #8e44ad;
-            box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.3);
-        }
-        .score-display {
-            background-color: #ecf0f1; /* Gris clair pastel */
-            padding: 0.5rem 1rem; /* Réduit le padding vertical encore plus */
-            border-radius: 1.5rem;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #333;
-            flex-wrap: nowrap; /* Empêche l'enroulement pour garder sur une ligne */
-            gap: 0.5rem; /* Espace entre les éléments de score */
-        }
-        .score-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex-grow: 1; /* Permet aux éléments de prendre l'espace disponible */
-            min-width: 0; /* Permet de réduire si l'espace est très limité */
-        }
-        /* Ajustement de la zone de score pour les petits écrans */
-        @media (max-width: 480px) {
-            .score-display {
-                justify-content: space-between; /* Espacement équitable */
-                padding: 0.4rem 0.6rem; /* Réduire encore le padding */
-            }
-            .score-item {
-                flex-basis: auto; /* Laisse le contenu dicter la largeur */
-                margin: 0 0.1rem; /* Petites marges latérales */
-            }
-            /* Pour l'objectif, on le garde au centre mais on le rend plus compact */
-            .score-item:nth-child(2) {
-                font-size: 1.1rem; /* Taille de police plus petite pour l'objectif */
-                white-space: normal; /* Permet le retour à la ligne */
-                line-height: 1.2; /* Ajuste la hauteur de ligne pour compacter */
-            }
-            .score-item span { /* Noms des joueurs */
-                font-size: 1.2rem; /* Augmenté */
-            }
-            .score-value { /* Scores numériques */
-                font-size: 2rem; /* Augmenté */
-            }
-        }
-
-        .score-value {
-            font-size: 2.2rem; /* Augmenté pour les écrans plus grands */
-            color: #8e44ad;
-        }
-        /* Noms des joueurs pour les écrans plus grands */
-        .score-item span:not(#score-target-display) {
-            font-size: 1.3rem;
-        }
-
-        .duel-area {
-            background-color: #ffebee; /* Rouge très clair pastel */
-            padding: 1.5rem;
-            border-radius: 1.5rem;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            min-height: 150px; /* Hauteur minimale pour la zone de duel */
-            position: relative;
-            flex-wrap: nowrap; /* Force l'affichage horizontal */
-            gap: 1rem; /* Espace entre les éléments de duel */
-        }
-        /* Styles pour les fonds colorés du duel */
-        .duel-winner-bg {
-            background-color: #d4edda; /* Vert clair */
-        }
-        .duel-loser-bg {
-            background-color: #f8d7da; /* Rouge clair */
-        }
-        .duel-tie-bg {
-            background-color: #cce5ff; /* Bleu clair */
-        }
-
-        /* Ajustement de la zone de duel pour les petits écrans (reste horizontale) */
-        @media (max-width: 480px) {
-            .duel-area {
-                padding: 1rem; /* Réduit le padding */
-                gap: 0.5rem; /* Réduit le gap */
-            }
-            .player-choice, .opponent-choice {
-                font-size: 1.3rem; /* Réduit la taille de police des noms */
-            }
-            .duel-separator {
-                font-size: 2.5rem; /* Réduit la taille du VS */
-            }
-            .choice-icon {
-                font-size: 2.8rem; /* Réduit la taille des icônes de choix */
-            }
-        }
-
-        .player-choice, .opponent-choice {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 1.5rem;
-            color: #333;
-            flex-grow: 1; /* Permet aux choix de prendre l'espace disponible */
-            min-width: 0; /* Permet de réduire si l'espace est très limité */
-            border-radius: 1rem; /* Arrondir les coins des zones de choix */
-            padding: 0.5rem; /* Ajouter un peu de padding pour le fond */
-            transition: background-color 0.3s ease; /* Transition douce pour le changement de couleur */
-        }
-        .duel-separator {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #8e44ad;
-        }
-        .message-area {
-            background-color: #e8f5e9; /* Vert très clair pastel */
             padding: 1rem;
-            border-radius: 1.5rem;
-            font-size: 1.6rem;
-            font-weight: bold;
-            color: #2e7d32; /* Vert foncé */
-            min-height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .hidden {
-            display: none;
+            color: white;
+            overflow-x: hidden; /* Empêche le défilement horizontal */
         }
 
-        /* Styles pour le sélecteur de score cible */
-        .score-target-selector {
+        /* Conteneur principal du jeu */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+            padding: 0 1rem;
+        }
+
+        /* Conteneur des grilles pour le responsive */
+        .game-area {
+            display: flex;
+            flex-direction: column; /* Par défaut en colonne (portrait sur petits écrans) */
+            gap: 2rem;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px; /* Limite la largeur maximale pour l'ensemble des grilles */
+            padding: 0 1rem; /* Ajoute un peu de padding horizontal */
+        }
+
+        /* Pour les écrans plus larges (tablettes/ordinateurs) - les grilles sont côte à côte */
+        @media (min-width: 768px) {
+            .game-area {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+
+        /* Ajustement spécifique pour les smartphones en mode paysage */
+        @media (max-width: 767px) and (orientation: landscape) {
+            .game-area {
+                flex-direction: row;
+                justify-content: center;
+                gap: 0.5rem; /* Réduire le gap pour les petits écrans en paysage */
+                padding: 0 0.5rem; /* Réduire le padding pour maximiser l'espace */
+            }
+        }
+
+        /* Styles de la grille */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr); /* 10 colonnes + 1 pour les numéros */
+            grid-template-rows: repeat(11, 1fr); /* 10 lignes + 1 pour les lettres */
+            gap: 1px; /* Espacement entre les cases */
+            background-color: var(--color-slate-gray); /* Bordure de la grille */
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            width: 90vw; /* Utilise 90% de la largeur de la vue par défaut */
+            max-width: 400px; /* Limite la taille max pour les très grands écrans */
+            aspect-ratio: 1 / 1; /* Maintient la grille carrée */
+        }
+
+        /* Ajustement de la taille des grilles pour les smartphones en mode paysage */
+        @media (max-width: 767px) and (orientation: landscape) {
+            .grid-container {
+                width: 47vw; /* Environ la moitié de la largeur de l'écran, moins le gap */
+                height: 47vw; /* Maintenir l'aspect ratio */
+                max-width: none; /* Supprimer la limite max-width pour permettre le 47vw */
+            }
+        }
+
+        .grid-cell {
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .score-target-selector button {
-            background-color: #aed6f1; /* Bleu clair pastel */
-            color: #333;
-            padding: 0.5rem 1rem;
-            border-radius: 1rem;
-            font-size: 1.5rem;
+            font-size: 0.75rem;
             font-weight: bold;
+            color: rgba(255, 255, 255, 0.8);
+            position: relative;
             cursor: pointer;
-            border: none;
-            transition: background-color 0.3s ease;
-        }
-        .score-target-selector button:hover {
-            background-color: #c5e1f7;
-        }
-        .score-target-selector span {
-            font-size: 1.8rem;
-            color: #6a0572;
-            font-weight: bold;
+            transition: background-color 0.2s ease-in-out;
+            user-select: none; /* Empêche la sélection de texte */
         }
 
-        /* Styles pour la modale de fin de partie */
-        .modal-overlay {
-            position: fixed;
+        /* Couleurs spécifiques pour les cellules d'eau des grilles */
+        #my-grid .grid-cell:not(.header) {
+            background-color: var(--color-player-grid-water);
+        }
+
+        #opponent-grid .grid-cell:not(.header) {
+            background-color: var(--color-opponent-grid-water);
+        }
+
+        .grid-cell.header {
+            background-color: var(--color-steel-gray);
+            cursor: default;
+        }
+
+        .grid-cell:not(.header):hover {
+            background-color: var(--color-sky-blue); /* Effet hover sur les cases de jeu */
+        }
+
+        /* Styles des bateaux */
+        .ship {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.25rem;
+            position: absolute;
+            width: calc(100% - 2px); /* Ajustement pour la bordure */
+            height: calc(100% - 2px);
+            z-index: 10; /* Assure que le bateau est au-dessus de la case */
+        }
+
+        /* Styles pour le placement */
+        .ship-to-place {
+            background-color: var(--color-steel-gray);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            /* La couleur sera définie directement en JS pour correspondre au bateau */
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ship-to-place.selected {
+            background-color: var(--color-ocean-blue) !important; /* !important pour override le style inline */
+            box-shadow: 0 0 0 3px var(--color-sky-blue);
+        }
+
+        .ship-preview {
+            background-color: rgba(108, 122, 137, 0.7); /* Gris semi-transparent pour l'aperçu */
+            position: absolute;
+            z-index: 5; /* En dessous du marqueur mais au-dessus de l'eau */
+            border-radius: 0.25rem;
+        }
+
+        .invalid-placement {
+            background-color: rgba(255, 65, 54, 0.5); /* Rouge semi-transparent pour placement invalide */
+        }
+
+        /* Animations */
+        @keyframes hit-animation {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+                background-color: var(--color-fire-red);
+            }
+            20% {
+                transform: scale(1.2);
+                opacity: 1;
+                background-color: var(--color-burnt-orange);
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+                background-color: var(--color-fire-red);
+            }
+        }
+
+        .hit-effect::before {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 1rem; /* Ajout d'un padding pour la modale sur petits écrans */
-            box-sizing: border-box;
-        }
-        .modal-content {
-            background-color: #ffffff;
-            padding: 2.5rem;
-            border-radius: 2rem;
-            text-align: center;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            max-width: 90%;
-            width: 450px;
-            font-family: 'Patrick Hand', cursive;
-        }
-        .modal-content h2 {
-            font-size: 2.5rem;
-            color: #8e44ad;
-            margin-bottom: 1.5rem;
-        }
-        .modal-content p {
-            font-size: 1.6rem;
-            color: #555;
-            margin-bottom: 2rem;
-        }
-        .modal-content .btn {
-            font-size: 1.6rem;
-            padding: 0.8rem 1.8rem;
-        }
-        .game-id-display {
-            background-color: #f0f4f8; /* Un gris-bleu très clair */
-            padding: 0.8rem;
-            border-radius: 1rem;
-            margin-top: 1.5rem;
-            font-size: 1.2rem;
-            color: #555;
-            word-break: break-all; /* Permet au texte long de se couper */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .game-id-value {
-            font-weight: bold;
-            color: #6a0572;
-            font-size: 1.4rem;
+            border-radius: 50%;
+            animation: hit-animation 0.7s ease-out forwards;
+            z-index: 20; /* Au-dessus de tout */
         }
 
-        /* Styles pour le message de statut Firebase */
-        #firebase-status-message {
+        @keyframes miss-animation {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+                background-color: var(--color-sky-blue);
+                box-shadow: 0 0 0 0 rgba(127, 219, 255, 0.7);
+            }
+            50% {
+                transform: scale(1);
+                opacity: 1;
+                background-color: var(--color-sky-blue);
+                box-shadow: 0 0 0 10px rgba(127, 219, 255, 0.3);
+            }
+            100% {
+                transform: scale(1.2);
+                opacity: 0;
+                background-color: var(--color-sky-blue);
+                box-shadow: 0 0 0 20px rgba(127, 219, 255, 0);
+            }
+        }
+
+        .miss-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            animation: miss-animation 0.9s ease-out forwards;
+            z-index: 20;
+        }
+
+        /* Styles pour les emojis marqueurs */
+        .emoji-marker {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem; /* Taille de l'emoji réduite */
+            z-index: 15; /* Au-dessus de la case */
+            pointer-events: none; /* Permet de cliquer à travers l'emoji si besoin */
+        }
+
+        /* Boutons de simulation (maintenant pour le debug ou pour un mode IA si implémenté) */
+        .simulation-buttons {
+            display: flex;
+            gap: 1rem;
             margin-top: 1rem;
-            padding: 0.8rem;
-            border-radius: 0.75rem;
-            font-size: 1.1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .simulation-buttons button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
             font-weight: bold;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .simulation-buttons button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .simulation-buttons button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .simulation-buttons .btn-hit {
+            background-color: var(--color-fire-red);
+            color: white;
+            border: none;
+        }
+
+        .simulation-buttons .btn-miss {
+            background-color: var(--color-ocean-blue);
+            color: white;
+            border: none;
+        }
+
+        /* Message d'état */
+        #game-message {
+            margin-top: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            min-height: 2rem; /* Pour éviter le Cumulative Layout Shift (CLS) */
+            text-align: center;
+        }
+
+        #version-info {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Styles spécifiques à la phase de placement */
+        #placement-controls {
+            display: flex; /* Par défaut, il est flex, pas 'hidden' */
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #ships-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        #placement-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Styles pour le bouton Rejouer */
+        #replay-button {
+            background-color: #4CAF50; /* Vert */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+            cursor: pointer;
+        }
+
+        #replay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Styles pour le lobby multijoueur */
+        #multiplayer-lobby {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        #multiplayer-lobby input {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            color: white;
+            margin-bottom: 1rem;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        #multiplayer-lobby button {
+            background-color: #007BFF; /* Bleu */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 0.5rem;
+            cursor: pointer;
+        }
+
+        #multiplayer-lobby button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #multiplayer-info {
+            margin-top: 1rem;
+            font-size: 1rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Page de Paramètres -->
-        <div id="settings-page">
-            <h1>Paramètres du Jeu</h1>
+    <h1 class="text-4xl md:text-5xl font-bold mb-8 text-shadow-lg">Bataille Navale</h1>
 
-            <div class="flex flex-col items-center gap-4">
-                <label for="player-name" class="text-xl font-bold text-gray-700">Ton Nom :</label>
-                <input type="text" id="player-name" class="input-field" placeholder="Ex: Lili">
-            </div>
+    <div id="game-message" class="text-center"></div>
 
-            <div class="score-target-selector mt-4">
-                <span class="text-xl font-bold text-gray-700">Score cible :</span>
-                <button id="score-target-minus">-</button>
-                <span id="score-target-value" class="text-2xl font-bold">3</span>
-                <button id="score-target-plus">+</button>
-            </div>
+    <!-- Lobby Multijoueur -->
+    <div id="multiplayer-lobby" class="flex flex-col items-center">
+        <h2 class="text-2xl font-semibold mb-4">Rejoindre ou Créer une Partie</h2>
+        <p class="mb-2">Ton ID Joueur : <span id="user-id-display">Chargement...</span></p>
+        <input type="text" id="game-id-input" placeholder="ID de la partie à rejoindre">
+        <div class="flex flex-wrap justify-center gap-2">
+            <button id="create-game-btn">Créer une nouvelle partie</button>
+            <button id="join-game-btn">Rejoindre la partie</button>
+        </div>
+        <p id="multiplayer-info" class="mt-4"></p>
+    </div>
 
-            <!-- Boutons activés par défaut en HTML -->
-            <button id="create-game-btn" class="btn btn-primary w-full mt-6">Créer une nouvelle partie</button>
-
-            <div class="mt-8">
-                <h2 class="text-xl font-bold text-gray-700">Ou Rejoindre une partie :</h2>
-                <input type="text" id="game-id-input" class="input-field mt-4" placeholder="Saisis l'ID de la partie">
-                <button id="join-game-btn" class="btn btn-primary w-full mt-2">Rejoindre la partie</button>
-            </div>
-
-            <!-- Message de statut Firebase sur la page de paramètres -->
-            <div id="firebase-status-message" class="mt-4 text-center">
-                Initialisation de Firebase...
+    <div id="game-container" class="hidden"> <!-- Cacher le conteneur du jeu au démarrage -->
+        <!-- Ma Grille (pour visualiser mes bateaux et placer) -->
+        <div class="flex flex-col items-center">
+            <h2 class="text-2xl font-semibold mb-4">Ma Grille</h2>
+            <div id="my-grid" class="grid-container">
+                <!-- Les cellules de la grille seront générées ici par JS -->
             </div>
         </div>
 
-        <!-- Écran de Jeu -->
-        <div id="game-page" class="hidden">
-            <h1 id="game-title">Pierre-Feuille-Ciseaux</h1>
-
-            <!-- Zone d'affichage de l'ID de la partie (déplacée ici) -->
-            <div id="game-id-display" class="game-id-display hidden">
-                <p>ID de la partie :</p>
-                <span class="game-id-value" id="current-game-id"></span>
-                <button id="copy-game-id-btn" class="btn btn-primary btn-sm mt-2">Copier l'ID</button>
-                <p class="text-sm text-gray-400 mt-2">Partage cet ID avec ton adversaire !</p>
-                <p id="waiting-for-opponent-message" class="text-lg text-purple-600 mt-2"></p>
+        <!-- Grille de l'Adversaire (pour tirer) - cachée pendant le placement -->
+        <div class="flex flex-col items-center hidden" id="opponent-grid-section">
+            <h2 class="text-2xl font-semibold mb-4">Grille de l'Adversaire</h2>
+            <div id="opponent-grid" class="grid-container">
+                <!-- Les cellules de la grille seront générées ici par JS -->
             </div>
-
-            <!-- Zone de Score -->
-            <div class="score-display mt-6">
-                <div class="score-item">
-                    <span id="player1-name-display" class="font-bold">Joueur 1</span>
-                    <span id="player1-score" class="score-value">0</span>
-                </div>
-                <div class="score-item">
-                    <span id="score-target-display" class="text-lg text-gray-500">Objectif<br>3 pts</span>
-                </div>
-                <div class="score-item">
-                    <span id="player2-name-display" class="font-bold">Joueur 2</span>
-                    <span id="player2-score" class="score-value">0</span>
-                </div>
-            </div>
-
-            <!-- Zone de Duel (Déplacée ici) -->
-            <div class="duel-area mt-6 hidden" id="duel-area">
-                <div class="player-choice">
-                    <span id="player1-duel-choice" class="choice-button-icon">?</span>
-                    <span id="player1-duel-name">Joueur 1</span>
-                </div>
-                <span class="duel-separator">VS</span>
-                <div class="opponent-choice">
-                    <span id="player2-duel-choice" class="choice-button-icon">?</span>
-                    <span id="player2-duel-name">Joueur 2</span>
-                </div>
-            </div>
-
-            <!-- Zone de Choix du Joueur -->
-            <div class="choice-area flex flex-col items-center gap-4 mt-6">
-                <h2 id="current-player-turn">C'est à ton tour !</h2>
-                <div class="flex justify-center gap-4 w-full">
-                    <button id="rock-btn" class="btn btn-rock flex-1">
-                        <span class="choice-button-icon">✊</span>
-                    </button>
-                    <button id="paper-btn" class="btn btn-paper flex-1">
-                        <span class="choice-button-icon">✋</span>
-                    </button>
-                    <button id="scissors-btn" class="btn btn-scissors flex-1">
-                        <span class="choice-button-icon">✌️</span>
-                    </button>
-                </div>
-                <p id="player-choice-feedback" class="text-lg text-gray-600 mt-2"></p>
-            </div>
-
-            <!-- Zone de Message -->
-            <div class="message-area mt-6" id="game-message">
-                Fais ton choix !
-            </div>
-
-            <!-- Bouton d'interruption (Déplacé en bas) -->
-            <button id="interrupt-game-btn" class="btn btn-interrupt">Interrompre la partie</button>
         </div>
     </div>
 
-    <!-- Modale de Fin de Partie -->
-    <div id="game-over-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 id="modal-title"></h2>
-            <p id="modal-message"></p>
-            <button id="replay-btn" class="btn btn-primary">Rejouer</button>
+    <!-- Contrôles de placement des bateaux -->
+    <div id="placement-controls" class="hidden"> <!-- Cacher par défaut, affiché via JS -->
+        <h3 class="text-xl font-semibold mb-2">Bateaux à placer :</h3>
+        <div id="ships-list" class="flex flex-wrap justify-center gap-3 mb-4">
+            <!-- Les bateaux seront générés ici par JS -->
+        </div>
+        <div id="placement-buttons">
+            <button id="rotate-ship-btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg">
+                Rotation
+            </button>
+            <button id="validate-placement-btn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg" disabled>
+                Valider mon placement
+            </button>
         </div>
     </div>
 
-    <div style="position: fixed; bottom: 5px; right: 5px; font-size: 0.8rem; color: #888; font-family: sans-serif;">
-        Version: <span id="app-version">v2.7</span>
+    <!-- Boutons de simulation (maintenant pour le debug ou pour un mode IA si implémenté) -->
+    <div class="simulation-buttons hidden">
+        <button id="simulate-hit" class="btn-hit">Simuler "Touché" Aléatoire</button>
+        <button id="simulate-miss" class="btn-miss">Simuler "Dans l'Eau" Aléatoire</button>
     </div>
 
+    <!-- Bouton Rejouer (caché par défaut) -->
+    <button id="replay-button" class="hidden">Rejouer</button>
+
+    <div id="version-info">Version: 1.0.25</div>
+
+    <!-- Firebase SDKs -->
     <script type="module">
-        // Version du code
-        const APP_VERSION = "v2.7"; // Incrémenter à chaque mise à jour majeure
-
-        // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Your web app's Firebase configuration (provided by the user)
-        const firebaseConfig = {
-            apiKey: "AIzaSyB0-ZvvLswmVUrc1os2lL_xQVr9s6mTAJE",
-            authDomain: "pierrefeuilleciseauxgame.firebaseapp.com",
-            projectId: "pierrefeuilleciseauxgame",
-            storageBucket: "pierrefeuilleciseauxgame.firebasestorage.app",
-            messagingSenderId: "732924531883",
-            appId: "1:732924531883:web:c6e021cc6a98102a6553ee"
-        };
+        // Récupération des éléments du DOM
+        const myGridElement = document.getElementById('my-grid');
+        const opponentGridElement = document.getElementById('opponent-grid');
+        const opponentGridSection = document.getElementById('opponent-grid-section');
+        const gameMessageElement = document.getElementById('game-message');
+        const simulateHitButton = document.getElementById('simulate-hit');
+        const simulateMissButton = document.getElementById('simulate-miss');
+        const placementControls = document.getElementById('placement-controls');
+        const shipsListElement = document.getElementById('ships-list');
+        const rotateShipButton = document.getElementById('rotate-ship-btn');
+        const validatePlacementButton = document.getElementById('validate-placement-btn');
+        const simulationButtonsContainer = document.querySelector('.simulation-buttons');
+        const replayButton = document.getElementById('replay-button');
 
-        // Initialize Firebase variables
+        // Éléments du lobby multijoueur
+        const multiplayerLobby = document.getElementById('multiplayer-lobby');
+        const gameIdInput = document.getElementById('game-id-input');
+        const createGameBtn = document.getElementById('create-game-btn');
+        const joinGameBtn = document.getElementById('join-game-btn');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const multiplayerInfo = document.getElementById('multiplayer-info');
+        const gameContainer = document.getElementById('game-container'); // Le conteneur principal du jeu
+
+        const gridSize = 10; // Taille de la grille (10x10)
+        const alphabet = 'ABCDEFGHIJ'; // Lettres pour les coordonnées
+
+        // Définition des bateaux (longueur, nom et couleur)
+        const initialShips = [
+            { id: 'carrier', name: 'Porte-avions', length: 5, placed: false, position: [], color: '#FF4136', hits: 0, sunk: false },
+            { id: 'battleship', name: 'Cuirassé', length: 4, placed: false, position: [], color: '#0074D9', hits: 0, sunk: false },
+            { id: 'cruiser', name: 'Croiseur', length: 3, placed: false, position: [], color: '#2ECC40', hits: 0, sunk: false },
+            { id: 'submarine', name: 'Sous-marin', length: 3, placed: false, position: [], color: '#FFDC00', hits: 0, sunk: false },
+            { id: 'destroyer', name: 'Torpilleur', length: 2, placed: false, position: [], color: '#B10DC9', hits: 0, sunk: false }
+        ];
+
+        // Variables Firebase
         let app;
         let db;
         let auth;
-        let userId; // Will store the authenticated user's ID
-        let gameRef; // Reference to the current game document in Firestore
-        let unsubscribeFromGame = null; // Function to unsubscribe from Firestore listener
-        let firebaseInitTimeout = null; // Timeout for Firebase initialization
+        let currentUserId = null;
+        let currentGameId = null;
+        let currentPlayerNumber = null; // 1 for player1, 2 for player2
+        let unsubscribeGameListener = null; // Pour désabonner le listener Firestore
 
-        // Variables du jeu (état local, sera synchronisé avec Firestore)
-        let localPlayerId = null; // Will be 'player1' or 'player2' in the game document
-        let gameData = null; // Stores the current state of the game from Firestore
-        let scoreTarget = 3; // Moved declaration to the top
-        let gameTimeout = null; // For clearing timeouts (used for duel display delay)
-        let duelDisplayTimeoutId = null; // NEW: To manage the local duel display timeout
+        // État du jeu local, synchronisé avec Firestore
+        let gameData = null;
+        let selectedShip = null;
+        let currentShipOrientation = 'horizontal';
 
-        // Determine the appId for Firestore path based on projectId
-        const firestoreAppId = firebaseConfig.projectId;
-
-        // Références aux éléments du DOM
-        const settingsPage = document.getElementById('settings-page');
-        const gamePage = document.getElementById('game-page');
-        const playerNameInput = document.getElementById('player-name'); // Un seul champ de nom
-        const scoreTargetValue = document.getElementById('score-target-value');
-        const scoreTargetMinusBtn = document.getElementById('score-target-minus');
-        const scoreTargetPlusBtn = document.getElementById('score-target-plus');
-        const createGameBtn = document.getElementById('create-game-btn'); // Nouveau bouton
-        const gameIdInput = document.getElementById('game-id-input');
-        const joinGameBtn = document.getElementById('join-game-btn'); // Nouveau bouton
-        // gameIdDisplay est maintenant dans game-page
-        const gameIdDisplay = document.getElementById('game-id-display'); // Zone d'affichage ID
-        const currentGameIdSpan = document.getElementById('current-game-id');
-        const copyGameIdBtn = document.getElementById('copy-game-id-btn');
-        const waitingForOpponentMessage = document.getElementById('waiting-for-opponent-message');
-        const interruptGameBtn = document.getElementById('interrupt-game-btn'); // Corrected typo here
-
-        const player1NameDisplay = document.getElementById('player1-name-display');
-        const player2NameDisplay = document.getElementById('player2-name-display');
-        const player1ScoreDisplay = document.getElementById('player1-score');
-        const player2ScoreDisplay = document.getElementById('player2-score');
-        const scoreTargetDisplay = document.getElementById('score-target-display');
-        const currentPlayerTurn = document.getElementById('current-player-turn');
-        const rockBtn = document.getElementById('rock-btn');
-        const paperBtn = document.getElementById('paper-btn');
-        const scissorsBtn = document.getElementById('scissors-btn');
-        const playerChoiceFeedback = document.getElementById('player-choice-feedback');
-        const duelArea = document.getElementById('duel-area');
-        const player1DuelChoice = document.getElementById('player1-duel-choice');
-        const player2DuelChoice = document.getElementById('player2-duel-choice');
-        const player1DuelName = document.getElementById('player1-duel-name');
-        const player2DuelName = document.getElementById('player2-duel-name');
-        const gameMessage = document.getElementById('game-message');
-        const firebaseStatusMessage = document.getElementById('firebase-status-message'); // Nouveau: message de statut Firebase
-
-        const gameOverModal = document.getElementById('game-over-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMessage = document.getElementById('modal-message');
-        const replayBtn = document.getElementById('replay-btn');
-
-        const choices = {
-            'rock': { name: 'Pierre', emoji: '✊' },
-            'paper': { name: 'Feuille', emoji: '✋' },
-            'scissors': { name: 'Ciseaux', emoji: '✌️' }
+        // Initialisation de Firebase avec la configuration fournie directement
+        const firebaseConfig = {
+            apiKey: "AIzaSyB4ci8440mSqxxEx7eNDuUUhGY5WWuyPyA",
+            authDomain: "bataille-navale-f9380.firebaseapp.com",
+            projectId: "bataille-navale-f9380",
+            storageBucket: "bataille-navale-f9380.firebasestorage.app",
+            messagingSenderId: "502015941698",
+            appId: "1:502015941698:web:dca1f46ddebec5378d21db"
         };
+        const appId = "1:502015941698:web:dca1f46ddebec5378d21db"; // Utilisation directe de l'appId fourni
 
-        // --- Firebase Core Functions ---
-        async function initializeFirebase() {
-            console.log("[Firebase Init] initializeFirebase function entered."); // NEW LOG
-            try {
-                if (!app) { // Initialize only once
-                    console.log("[Firebase Init] Initializing Firebase app...");
-                    firebaseStatusMessage.textContent = "Initialisation de l'application Firebase...";
-                    firebaseStatusMessage.style.backgroundColor = '#e0f7fa'; // Light blue
-                    firebaseStatusMessage.style.color = '#006064'; // Dark blue
+        // Initialisation de l'application Firebase
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
 
-                    app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-                    console.log("[Firebase Init] Firebase app, db, auth objects created."); // NEW LOG
-
-                    // Set a timeout for Firebase initialization
-                    firebaseInitTimeout = setTimeout(() => {
-                        if (!userId) { // If userId is still null, Firebase hasn't authenticated
-                            console.error("[Firebase Init] Firebase initialization timed out. This might be due to network issues or browser restrictions.");
-                            firebaseStatusMessage.textContent = "Échec de connexion Firebase : Délai dépassé. Vérifie ta connexion Internet ou les restrictions réseau.";
-                            firebaseStatusMessage.style.backgroundColor = '#f8d7da'; // Light red
-                            firebaseStatusMessage.style.color = '#721c24'; // Dark red
-                            console.log("[Firebase Init] Calling disableSettingsInputs from firebaseInitTimeout."); // NEW LOG
-                            disableSettingsInputs(); // Keep buttons disabled
-                        }
-                    }, 10000); // 10 seconds timeout
-
-                    console.log("[Firebase Init] Setting up onAuthStateChanged listener...");
-                    firebaseStatusMessage.textContent = "Écoute des changements d'authentification Firebase...";
-                    firebaseStatusMessage.style.backgroundColor = '#e3f2fd'; // Lighter blue
-                    firebaseStatusMessage.style.color = '#1976d2'; // Medium blue
-
-                    // Listen for authentication state changes
-                    onAuthStateChanged(auth, (user) => {
-                        if (firebaseInitTimeout) clearTimeout(firebaseInitTimeout); // Clear timeout if auth succeeds
-
-                        if (user) {
-                            userId = user.uid;
-                            console.log("[Firebase Init] Firebase initialized and user authenticated. User ID:", userId);
-                            firebaseStatusMessage.textContent = "Firebase connecté ! Prêt à jouer.";
-                            firebaseStatusMessage.style.backgroundColor = '#d4edda'; // Light green
-                            firebaseStatusMessage.style.color = '#155724'; // Dark green
-                            console.log("[Firebase Init] Calling enableSettingsInputs from onAuthStateChanged (user exists)."); // NEW LOG
-                            enableSettingsInputs(); // Enable settings inputs
-                            updateScoreTargetDisplay();
-                            updateGameInfo();
-                            showPage('settings-page'); // Always start on settings page
-                        } else {
-                            // User is signed out or not yet signed in. Attempt to sign in anonymously.
-                            console.log("[Firebase Init] User not authenticated. Attempting anonymous sign-in...");
-                            firebaseStatusMessage.textContent = "Tentative de connexion anonyme à Firebase...";
-                            firebaseStatusMessage.style.backgroundColor = '#fff3cd'; // Light yellow
-                            firebaseStatusMessage.style.color = '#856404'; // Dark yellow
-
-                            signInAnonymously(auth).then((anonUser) => {
-                                userId = anonUser.user.uid;
-                                console.log("[Firebase Init] Signed in anonymously. User ID:", userId);
-                                firebaseStatusMessage.textContent = "Firebase connecté (anonyme) ! Prêt à jouer.";
-                                firebaseStatusMessage.style.backgroundColor = '#d4edda'; // Light green
-                                firebaseStatusMessage.style.color = '#155724'; // Dark green
-                                console.log("[Firebase Init] Calling enableSettingsInputs from signInAnonymously success."); // NEW LOG
-                                enableSettingsInputs(); // Enable after anonymous sign-in
-                                updateScoreTargetDisplay();
-                                updateGameInfo();
-                                showPage('settings-page');
-                            }).catch((error) => {
-                                console.error("[Firebase Init] Error signing in anonymously:", error);
-                                firebaseStatusMessage.textContent = `Erreur de connexion Firebase : ${error.message}. Vérifie ta connexion.`;
-                                firebaseStatusMessage.style.backgroundColor = '#f8d7da'; // Light red
-                                firebaseStatusMessage.style.color = '#721c24'; // Dark red
-                                console.log("[Firebase Init] Calling disableSettingsInputs from signInAnonymously catch."); // NEW LOG
-                                disableSettingsInputs(); // Keep disabled if auth fails
-                            });
-                        }
-                    });
-
-                    // If __initial_auth_token is provided (Canvas environment), use it
-                    if (typeof __initial_auth_token !== 'undefined') {
-                        console.log("[Firebase Init] Attempting sign-in with custom token...");
-                        firebaseStatusMessage.textContent = "Tentative de connexion avec un jeton personnalisé...";
-                        firebaseStatusMessage.style.backgroundColor = '#cce5ff'; // Pale blue
-                        firebaseStatusMessage.style.color = '#004085'; // Darker blue
+        // Authentification anonyme
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                userIdDisplay.textContent = currentUserId;
+                multiplayerInfo.textContent = "Authentifié. Crée ou rejoins une partie.";
+            } else {
+                try {
+                    // Utilise __initial_auth_token si disponible, sinon authentification anonyme
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
-                    }
-                }
-            } catch (error) {
-                console.error("[Firebase Init] Error initializing Firebase or signing in:", error);
-                firebaseStatusMessage.textContent = `Erreur d'initialisation de Firebase : ${error.message}.`;
-                firebaseStatusMessage.style.backgroundColor = '#f8d7da'; // Light red
-                firebaseStatusMessage.style.color = '#721c24'; // Dark red
-                console.log("[Firebase Init] Calling disableSettingsInputs from initializeFirebase catch."); // NEW LOG
-                disableSettingsInputs(); // Keep disabled if init fails
-            }
-        }
-
-        // --- Helper Functions (defined before usage) ---
-        function showPage(pageId) {
-            settingsPage.classList.add('hidden');
-            gamePage.classList.add('hidden');
-            document.getElementById(pageId).classList.remove('hidden');
-        }
-
-        function updateScoreTargetDisplay() {
-            scoreTargetValue.textContent = scoreTarget;
-            scoreTargetDisplay.innerHTML = `Objectif<br>${scoreTarget} pts`;
-        }
-
-        function updateGameInfo() {
-            // Utilise les noms par défaut si les champs sont vides
-            const p1Name = gameData ? gameData.player1Name : (playerNameInput.value.trim() || 'Joueur 1');
-            const p2Name = gameData ? gameData.player2Name : 'Joueur 2'; // Player 2 name only comes from gameData
-
-            player1NameDisplay.textContent = p1Name;
-            player2NameDisplay.textContent = p2Name;
-            player1ScoreDisplay.textContent = gameData ? gameData.player1Score : 0;
-            player2ScoreDisplay.textContent = gameData ? gameData.player2Score : 0;
-            scoreTargetDisplay.innerHTML = `Objectif<br>${gameData ? gameData.scoreTarget : scoreTarget} pts`;
-            player1DuelName.textContent = p1Name;
-            player2DuelName.textContent = p2Name;
-        }
-
-        function resetRoundUI() {
-            playerChoiceFeedback.textContent = '';
-            gameMessage.textContent = 'Fais ton choix !';
-            duelArea.classList.add('hidden'); // Cache la zone de duel au début d'un nouveau tour
-            player1DuelChoice.textContent = '?';
-            player2DuelChoice.textContent = '?';
-            // Réactiver les boutons de choix
-            rockBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            paperBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            scissorsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            rockBtn.disabled = false; // Réactiver l'attribut disabled pour les boutons de choix
-            paperBtn.disabled = false;
-            scissorsBtn.disabled = false;
-            rockBtn.style.pointerEvents = 'auto'; // Réactiver pointer-events
-            paperBtn.style.pointerEvents = 'auto';
-            scissorsBtn.style.pointerEvents = 'auto';
-            // Réinitialiser les styles de sélection
-            rockBtn.classList.remove('ring-4', 'ring-purple-400');
-            paperBtn.classList.remove('ring-4', 'ring-purple-400');
-            scissorsBtn.classList.remove('ring-4', 'ring-purple-400');
-            // Remove all background classes from duel elements
-            player1DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
-            player2DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
-        }
-
-        function disableChoiceButtons() {
-            rockBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            paperBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            scissorsBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            rockBtn.disabled = true; // Désactiver l'attribut disabled pour les boutons de choix
-            paperBtn.disabled = true;
-            scissorsBtn.disabled = true;
-            rockBtn.style.pointerEvents = 'none'; // Désactiver pointer-events
-            paperBtn.style.pointerEvents = 'none';
-            scissorsBtn.style.pointerEvents = 'none';
-        }
-
-        function enableChoiceButtons() {
-            rockBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            paperBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            scissorsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            rockBtn.disabled = false; // Réactiver l'attribut disabled pour les boutons de choix
-            paperBtn.disabled = false;
-            scissorsBtn.disabled = false;
-            rockBtn.style.pointerEvents = 'auto'; // Réactiver pointer-events
-            paperBtn.style.pointerEvents = 'auto';
-            scissorsBtn.style.pointerEvents = 'auto';
-        }
-
-        function showGameOverModal(winnerName) {
-            modalTitle.textContent = winnerName === 'Égalité' ? 'Partie Terminée !' : `Félicitations ${winnerName} !`;
-            modalMessage.textContent = winnerName === 'Égalité' ? 'La partie est une égalité.' : `${winnerName} a gagné la partie !`;
-            gameOverModal.classList.remove('hidden');
-        }
-
-        function hideGameOverModal() {
-            gameOverModal.classList.add('hidden');
-        }
-
-        function determineWinner(choice1, choice2) {
-            if (choice1 === choice2) return 'Égalité';
-            if (
-                (choice1 === 'rock' && choice2 === 'scissors') ||
-                (choice1 === 'paper' && choice2 === 'rock') ||
-                (choice1 === 'scissors' && choice2 === 'paper')
-            ) {
-                return 'Joueur 1';
-            }
-            return 'Joueur 2';
-        }
-
-        function generateGameId() {
-            return Math.random().toString(36).substring(2, 8).toUpperCase();
-        }
-
-        function disableSettingsInputs() {
-            console.log("[UI] disableSettingsInputs called. Disabling inputs and buttons."); // NEW LOG
-            playerNameInput.disabled = true;
-            scoreTargetMinusBtn.disabled = true;
-            scoreTargetPlusBtn.disabled = true;
-            createGameBtn.disabled = true; // Désactiver l'attribut disabled
-            joinGameBtn.disabled = true; // Désactiver l'attribut disabled
-            gameIdInput.disabled = true; // Désactiver l'attribut disabled
-
-            // Ajouter des classes Tailwind pour l'opacité et le curseur
-            createGameBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            joinGameBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            scoreTargetMinusBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            scoreTargetPlusBtn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            // Désactiver pointer-events
-            createGameBtn.style.pointerEvents = 'none';
-            joinGameBtn.style.pointerEvents = 'none';
-            scoreTargetMinusBtn.style.pointerEvents = 'none';
-            scoreTargetPlusBtn.style.pointerEvents = 'none';
-
-            console.log(`[UI] State after disable: CreateBtn disabled=${createGameBtn.disabled}, JoinBtn disabled=${joinGameBtn.disabled}`);
-        }
-
-        function enableSettingsInputs() {
-            console.log("[UI] enableSettingsInputs called. Enabling inputs and buttons."); // NEW LOG
-            playerNameInput.disabled = false;
-            scoreTargetMinusBtn.disabled = false;
-            scoreTargetPlusBtn.disabled = false;
-            createGameBtn.disabled = false; // Réactiver l'attribut disabled
-            joinGameBtn.disabled = false; // Réactiver l'attribut disabled
-            gameIdInput.disabled = false; // Réactiver l'attribut disabled
-
-            // Retirer les classes Tailwind pour l'opacité et le curseur
-            createGameBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            joinGameBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            scoreTargetMinusBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            scoreTargetPlusBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-
-            // Réactiver pointer-events
-            createGameBtn.style.pointerEvents = 'auto';
-            joinGameBtn.style.pointerEvents = 'auto';
-            scoreTargetMinusBtn.style.pointerEvents = 'auto';
-            scoreTargetPlusBtn.style.pointerEvents = 'auto';
-
-            console.log(`[UI] State after enable: CreateBtn disabled=${createGameBtn.disabled}, JoinBtn disabled=${joinGameBtn.disabled}`);
-        }
-
-        // --- Game Lobby Functions ---
-        async function createGame() {
-            if (!db || !userId) {
-                console.error("[Game Lobby] Firebase not initialized or userId not set. Cannot create game.");
-                firebaseStatusMessage.textContent = "Erreur: Firebase non initialisé ou utilisateur non connecté.";
-                firebaseStatusMessage.style.backgroundColor = '#f8d7da';
-                firebaseStatusMessage.style.color = '#721c24';
-                return;
-            }
-
-            const gameId = generateGameId();
-            gameRef = doc(db, `artifacts/${firestoreAppId}/public/data/games`, gameId);
-            const playerName = playerNameInput.value.trim() || 'Joueur';
-
-            try {
-                disableSettingsInputs(); // Disable buttons immediately to prevent double-clicks
-                console.log(`[Game Lobby] Creating game ${gameId} with player1Id: ${userId}, player1Name: ${playerName}`);
-                await setDoc(gameRef, {
-                    player1Id: userId,
-                    player1Name: playerName,
-                    player1Score: 0,
-                    player1Choice: null,
-                    player2Id: null,
-                    player2Name: null,
-                    player2Score: 0,
-                    player2Choice: null,
-                    scoreTarget: parseInt(scoreTargetValue.textContent),
-                    status: 'waitingForPlayer2', // Initial status
-                    currentPlayerTurn: 'player1', // Player1 starts (conceptually)
-                    lastUpdated: Date.now()
-                });
-                localPlayerId = 'player1';
-                currentGameIdSpan.textContent = gameId; // Set ID here
-                console.log("[Game Lobby] Game created, starting listener.");
-                listenToGameChanges(gameId); // Start listening for changes
-                // updateGameUI will now handle showing the game page with ID
-            } catch (e) {
-                console.error("[Game Lobby] Error creating game:", e);
-                gameMessage.textContent = "Erreur lors de la création de la partie.";
-                enableSettingsInputs(); // Re-enable buttons if creation failed
-            }
-        }
-
-        async function joinGame() {
-            if (!db || !userId) {
-                console.error("[Game Lobby] joinGame: Firebase not initialized or userId not set. Cannot join game.");
-                firebaseStatusMessage.textContent = "Erreur: Firebase non initialisé ou utilisateur non connecté.";
-                firebaseStatusMessage.style.backgroundColor = '#f8d7da';
-                firebaseStatusMessage.style.color = '#721c24';
-                return;
-            }
-
-            const gameId = gameIdInput.value.trim();
-            if (!gameId) {
-                gameMessage.textContent = "Veuillez saisir un ID de partie.";
-                console.log("[Game Lobby] joinGame: No game ID provided.");
-                return;
-            }
-
-            gameRef = doc(db, `artifacts/${firestoreAppId}/public/data/games`, gameId);
-            console.log("[Game Lobby] joinGame: Attempting to get game document for ID:", gameId);
-            
-            try {
-                disableSettingsInputs(); // Disable buttons immediately
-                const gameSnap = await getDoc(gameRef);
-
-                if (gameSnap.exists()) {
-                    const data = gameSnap.data();
-                    console.log("[Game Lobby] joinGame: Game document exists. Data:", data);
-
-                    // Check if current user is already player1 or player2
-                    if (data.player1Id === userId || data.player2Id === userId) {
-                        localPlayerId = (data.player1Id === userId) ? 'player1' : 'player2';
-                        console.log("[Game Lobby] joinGame: Rejoining own game as:", localPlayerId);
-                        gameMessage.textContent = "Reconnexion à la partie...";
-                        listenToGameChanges(gameId);
-                        // UI will be updated by onSnapshot
-                        return;
-                    }
-
-                    // Check if both player slots are taken by *other* users
-                    if (data.player1Id && data.player2Id && data.player1Id !== userId && data.player2Id !== userId) {
-                        gameMessage.textContent = "Cette partie est déjà pleine ou en cours.";
-                        console.log("[Game Lobby] joinGame: Game is full and current user is not part of it.");
-                        enableSettingsInputs(); // Re-enable if game is full
-                        return;
-                    }
-                    
-                    // If player2 slot is empty, join as player2
-                    if (!data.player2Id) {
-                        console.log("[Game Lobby] joinGame: Slot for player2 is available. Updating Firestore...");
-                        const playerName = playerNameInput.value.trim() || 'Joueur';
-                        await setDoc(gameRef, {
-                            player2Id: userId,
-                            player2Name: playerName,
-                            status: 'playing' // Game starts when 2nd player joins
-                        }, { merge: true }); // Merge to update specific fields
-                        localPlayerId = 'player2';
-                        console.log("[Game Lobby] joinGame: Successfully joined game as player2:", gameId);
-                        listenToGameChanges(gameId); // Start listening for changes
-                        // UI will be updated by onSnapshot
                     } else {
-                        gameMessage.textContent = "Cette partie est déjà pleine.";
-                        console.log("[Game Lobby] joinGame: Game is already full.");
-                        enableSettingsInputs(); // Re-enable if game is full
+                        await signInAnonymously(auth);
                     }
-                } else {
-                    gameMessage.textContent = "Partie introuvable. Vérifie l'ID.";
-                    console.log("[Game Lobby] joinGame: Game document does not exist for ID:", gameId);
-                    enableSettingsInputs(); // Re-enable if game not found
+                } catch (error) {
+                    console.error("Erreur d'authentification:", error);
+                    multiplayerInfo.textContent = "Erreur d'authentification. Veuillez réessayer.";
                 }
-            } catch (error) {
-                console.error("[Game Lobby] joinGame: Error during join process (permissions?).", error);
-                gameMessage.textContent = "Erreur lors de la tentative de rejoindre la partie (permissions?).";
-                enableSettingsInputs(); // Re-enable buttons if an error occurred
             }
-        }
+        });
 
-        // --- Real-time Game Logic with Firestore Listener ---
-        function listenToGameChanges(gameId) {
-            if (unsubscribeFromGame) {
-                console.log("[Firestore Listener] Unsubscribing from previous game listener.");
-                unsubscribeFromGame(); // Unsubscribe from previous game if any
+        /**
+         * Crée une nouvelle partie dans Firestore.
+         */
+        createGameBtn.addEventListener('click', async () => {
+            if (!currentUserId) {
+                multiplayerInfo.textContent = "Authentification en cours... Veuillez patienter.";
+                return;
             }
-            gameRef = doc(db, `artifacts/${firestoreAppId}/public/data/games`, gameId);
-            console.log(`[Firestore Listener] Setting up onSnapshot for game ID: ${gameId}`);
-            unsubscribeFromGame = onSnapshot(gameRef, (docSnap) => {
-                console.log("[Firestore Listener] onSnapshot triggered!");
-                console.log(`[Firestore Listener] docSnap.exists(): ${docSnap.exists()}`);
+
+            // Générer un ID de partie simple pour le prototype
+            const newGameId = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const gameDocRef = doc(db, `artifacts/${appId}/public/data/battleship_games`, newGameId);
+
+            try {
+                // Vérifier si la partie existe déjà (peu probable avec un ID aléatoire, mais bonne pratique)
+                const docSnap = await getDoc(gameDocRef);
+                if (docSnap.exists()) {
+                    multiplayerInfo.textContent = `La partie ${newGameId} existe déjà. Essaye un autre ID ou rejoins-la.`;
+                    return;
+                }
+
+                // Initialiser l'état de la partie
+                const initialGameState = {
+                    player1Id: currentUserId,
+                    player2Id: null, // En attente du deuxième joueur
+                    // Sérialiser les grilles et les bateaux en JSON strings
+                    player1Grid: JSON.stringify(Array(gridSize).fill(null).map(() => Array(gridSize).fill(0))),
+                    player2Grid: JSON.stringify(Array(gridSize).fill(null).map(() => Array(gridSize).fill(0))),
+                    player1Ships: JSON.stringify(initialShips),
+                    player2Ships: JSON.stringify(initialShips),
+                    currentPlayerTurn: currentUserId, // Le créateur commence le placement
+                    status: 'waiting', // 'waiting', 'placement', 'playing', 'finished'
+                    winner: null,
+                    createdAt: new Date(),
+                    lastUpdated: new Date(),
+                    player1PlacementDone: false, // Nouveau champ pour le suivi du placement
+                    player2PlacementDone: false  // Nouveau champ pour le suivi du placement
+                };
+
+                await setDoc(gameDocRef, initialGameState);
+                currentGameId = newGameId;
+                currentPlayerNumber = 1;
+                multiplayerInfo.textContent = `Partie créée ! ID: ${newGameId}. En attente du joueur 2.`;
+                gameIdInput.value = newGameId; // Pré-remplir l'input pour faciliter le partage
+                listenForGameUpdates(newGameId); // Écouter les changements
+                multiplayerLobby.classList.add('hidden'); // Cacher le lobby
+                gameContainer.classList.remove('hidden'); // Afficher le conteneur du jeu
+                // updateGameDisplay() sera appelé par le listener
+            } catch (e) {
+                console.error("Erreur lors de la création de la partie: ", e);
+                multiplayerInfo.textContent = "Erreur lors de la création de la partie.";
+            }
+        });
+
+        /**
+         * Rejoindre une partie existante.
+         */
+        joinGameBtn.addEventListener('click', async () => {
+            if (!currentUserId) {
+                multiplayerInfo.textContent = "Authentification en cours... Veuillez patienter.";
+                return;
+            }
+
+            const gameIdToJoin = gameIdInput.value.trim().toUpperCase();
+            if (!gameIdToJoin) {
+                multiplayerInfo.textContent = "Veuillez entrer un ID de partie.";
+                return;
+            }
+
+            const gameDocRef = doc(db, `artifacts/${appId}/public/data/battleship_games`, gameIdToJoin);
+
+            try {
+                const docSnap = await getDoc(gameDocRef);
+
+                if (!docSnap.exists()) {
+                    multiplayerInfo.textContent = `La partie ${gameIdToJoin} n'existe pas.`;
+                    return;
+                }
+
+                const data = docSnap.data();
+
+                if (data.player1Id === currentUserId || data.player2Id === currentUserId) {
+                    // Reconnexion à une partie déjà rejointe
+                    currentGameId = gameIdToJoin;
+                    currentPlayerNumber = (data.player1Id === currentUserId) ? 1 : 2;
+                    multiplayerInfo.textContent = `Rejoint la partie ${gameIdToJoin}.`;
+                    listenForGameUpdates(gameIdToJoin);
+                    multiplayerLobby.classList.add('hidden');
+                    gameContainer.classList.remove('hidden');
+                    // updateGameDisplay() sera appelé par le listener
+                    return;
+                }
+
+                if (data.player2Id && data.player2Id !== currentUserId) {
+                    multiplayerInfo.textContent = `La partie ${gameIdToJoin} est déjà pleine.`;
+                    return;
+                }
+
+                // Rejoindre en tant que joueur 2
+                await updateDoc(gameDocRef, {
+                    player2Id: currentUserId,
+                    status: 'placement', // La partie passe en phase de placement une fois 2 joueurs
+                    lastUpdated: new Date()
+                });
+
+                currentGameId = gameIdToJoin;
+                currentPlayerNumber = 2;
+                multiplayerInfo.textContent = `Rejoint la partie ${gameIdToJoin} en tant que joueur 2.`;
+                listenForGameUpdates(gameIdToJoin);
+                multiplayerLobby.classList.add('hidden');
+                gameContainer.classList.remove('hidden');
+                // updateGameDisplay() sera appelé par le listener
+            } catch (e) {
+                console.error("Erreur lors de la jonction de la partie: ", e);
+                multiplayerInfo.textContent = "Erreur lors de la jonction de la partie.";
+            }
+        });
+
+        /**
+         * Écoute les mises à jour de l'état du jeu depuis Firestore.
+         * @param {string} gameId - L'ID de la partie à écouter.
+         */
+        function listenForGameUpdates(gameId) {
+            if (unsubscribeGameListener) {
+                unsubscribeGameListener(); // Désabonne l'ancien listener si existant
+            }
+
+            const gameDocRef = doc(db, `artifacts/${appId}/public/data/battleship_games`, gameId);
+            unsubscribeGameListener = onSnapshot(gameDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     gameData = docSnap.data();
-                    console.log("[Firestore Listener] Game data received:", JSON.stringify(gameData));
-                    updateGameUI(); // Update UI based on new gameData
+                    // Désérialiser les grilles et les bateaux
+                    gameData.player1Grid = JSON.parse(gameData.player1Grid);
+                    gameData.player2Grid = JSON.parse(gameData.player2Grid);
+                    gameData.player1Ships = JSON.parse(gameData.player1Ships);
+                    gameData.player2Ships = JSON.parse(gameData.player2Ships);
+
+                    updateGameDisplay(); // Met à jour l'interface utilisateur
                 } else {
-                    console.log("[Firestore Listener] Game deleted or not found by onSnapshot.");
-                    gameMessage.textContent = "La partie a été supprimée ou n'existe plus.";
-                    interruptGame(); // Go back to settings if game disappears
+                    console.log("La partie n'existe plus.");
+                    gameMessageElement.textContent = "La partie a été supprimée ou n'existe plus.";
+                    resetGame(); // Revenir à l'état initial
                 }
             }, (error) => {
-                console.error("[Firestore Listener] Error listening to game changes:", error);
-                gameMessage.textContent = "Erreur de synchronisation de la partie.";
+                console.error("Erreur d'écoute Firestore:", error);
+                gameMessageElement.textContent = "Erreur de connexion à la partie.";
             });
         }
 
-        function updateGameUI() {
-            if (!gameData || !userId) {
-                console.log("[UI Update] gameData or userId not available. Skipping UI update.");
+        /**
+         * Met à jour l'état du jeu dans Firestore.
+         * @param {object} updates - Les champs à mettre à jour.
+         */
+        async function updateGameInFirestore(updates) {
+            if (!currentGameId) {
+                console.error("Aucune partie sélectionnée pour la mise à jour.");
                 return;
             }
-
-            console.log("--- [UI Update] updateGameUI called ---");
-            console.log(`[UI Update] localPlayerId (before determination): ${localPlayerId}`);
-            console.log(`[UI Update] Current userId: ${userId}`);
-            console.log(`[UI Update] gameData.status: ${gameData.status}`);
-            console.log(`[UI Update] gameData.currentPlayerTurn: ${gameData.currentPlayerTurn}`);
-            console.log(`[UI Update] gameData.player1Id: ${gameData.player1Id}`);
-            console.log(`[UI Update] gameData.player2Id: ${gameData.player2Id}`);
-            console.log(`[UI Update] gameData.player1Choice: ${gameData.player1Choice}`);
-            console.log(`[UI Update] gameData.player2Choice: ${gameData.player2Choice}`);
-
-
-            // Determine if current user is player1 or player2 in the gameData
-            const isPlayer1 = gameData.player1Id === userId;
-            const isPlayer2 = gameData.player2Id === userId;
-
-            // If localPlayerId is not yet set, try to determine it from gameData
-            // This is crucial for clients rejoining or refreshing
-            if (!localPlayerId) {
-                if (isPlayer1) {
-                    localPlayerId = 'player1';
-                } else if (isPlayer2) {
-                    localPlayerId = 'player2';
+            const gameDocRef = doc(db, `artifacts/${appId}/public/data/battleship_games`, currentGameId);
+            
+            // Sérialiser les données avant d'envoyer à Firestore
+            const updatesToSend = { ...updates };
+            for (const key in updatesToSend) {
+                if (key === 'player1Grid' || key === 'player2Grid' || key === 'player1Ships' || key === 'player2Ships') {
+                    updatesToSend[key] = JSON.stringify(updatesToSend[key]);
                 }
-                console.log(`[UI Update] localPlayerId (after determination): ${localPlayerId}`);
             }
-            console.log(`[UI Update] Is current user player1? ${isPlayer1}`);
-            console.log(`[UI Update] Is current user player2? ${isPlayer2}`);
-
-
-            // Update player names and scores
-            player1NameDisplay.textContent = gameData.player1Name || 'Joueur 1';
-            player2NameDisplay.textContent = gameData.player2Name || 'Joueur 2';
-            player1ScoreDisplay.textContent = gameData.player1Score;
-            player2ScoreDisplay.textContent = gameData.player2Score;
-            scoreTargetDisplay.innerHTML = `Objectif<br>${gameData.scoreTarget} pts`;
-
-            // Clear player turn highlight
-            player1NameDisplay.classList.remove('text-purple-700', 'border-b-2', 'border-purple-700');
-            player2NameDisplay.classList.remove('text-purple-700', 'border-b-2', 'border-purple-700');
-
-
-            // Handle game status transitions
-            if (gameData.status === 'waitingForPlayer2') {
-                console.log("[UI Update] Game status: waitingForPlayer2");
-                showPage('game-page'); // SHOW GAME PAGE
-                resetRoundUI(); // Ensure choice buttons are disabled and UI is clean
-                gameIdDisplay.classList.remove('hidden'); // Ensure ID is visible
-                currentGameIdSpan.textContent = gameRef.id; // Display the game ID
-                waitingForOpponentMessage.textContent = `Partie créée ! Partage cet ID avec ton adversaire : ${gameRef.id}. En attente du deuxième joueur... (Ton ID: ${userId.substring(0, 8)}...)`;
-                gameMessage.textContent = "En attente du deuxième joueur...";
-                currentPlayerTurn.textContent = "En attente d'un adversaire..."; // Clear player turn message
-                disableChoiceButtons(); // Choice buttons should always be disabled in this state
-                // Ensure settings inputs are disabled when on game page waiting for opponent
-                disableSettingsInputs(); // Keep settings inputs disabled
-            } else if (gameData.status === 'playing') {
-                console.log("[UI Update] Game status: playing");
-                waitingForOpponentMessage.textContent = ''; // Clear waiting message
-                gameIdDisplay.classList.add('hidden'); // Hide game ID once game starts
-                showPage('game-page'); // Ensure game page is visible
-                // Do NOT call resetRoundUI() here directly, as it would hide the duel area prematurely.
-
-                const myCurrentChoice = gameData[localPlayerId + 'Choice'];
-                const opponentCurrentChoice = gameData[(localPlayerId === 'player1' ? 'player2' : 'player1') + 'Choice'];
-                const opponentName = localPlayerId === 'player1' ? gameData.player2Name : gameData.player1Name;
-                const myName = localPlayerId === 'player1' ? gameData.player1Name : gameData.player2Name;
-
-                // Always update whose turn it is in the UI based on Firestore's currentPlayerTurn
-                if (gameData.currentPlayerTurn === 'player1') {
-                    currentPlayerTurn.textContent = `Tour de ${gameData.player1Name} !`;
-                    player1NameDisplay.classList.add('text-purple-700', 'border-b-2', 'border-purple-700');
-                    player2NameDisplay.classList.remove('text-purple-700', 'border-b-2', 'border-purple-700');
-                } else if (gameData.currentPlayerTurn === 'player2') {
-                    currentPlayerTurn.textContent = `Tour de ${gameData.player2Name} !`;
-                    player2NameDisplay.classList.add('text-purple-700', 'border-b-2', 'border-purple-700');
-                    player1NameDisplay.classList.remove('text-purple-700', 'border-b-2', 'border-purple-700');
-                }
-
-                // Logic for displaying duel and managing buttons/messages
-                if (gameData.player1Choice && gameData.player2Choice) {
-                    // Both players have chosen, show duel results
-                    console.log("[UI Update] Both choices made. Showing duel area.");
-                    duelArea.classList.remove('hidden');
-
-                    // Set player names in duel area
-                    player1DuelName.textContent = gameData.player1Name || 'Joueur 1';
-                    player2DuelName.textContent = gameData.player2Name || 'Joueur 2';
-
-                    player1DuelChoice.textContent = choices[gameData.player1Choice].emoji;
-                    player2DuelChoice.textContent = choices[gameData.player2Choice].emoji;
-                    disableChoiceButtons(); // Disable buttons during duel display
-
-                    const winner = determineWinner(gameData.player1Choice, gameData.player2Choice);
-                    let resultMessage = '';
-
-                    // Remove previous background classes
-                    player1DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
-                    player2DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
-
-                    if (winner === 'Joueur 1') {
-                        resultMessage = `${gameData.player1Name} gagne ce tour !`;
-                        gameMessage.style.color = '#2e7d32'; // Vert
-                        gameMessage.style.backgroundColor = '#e8f5e9';
-                        player1DuelChoice.parentElement.classList.add('duel-winner-bg');
-                        player2DuelChoice.parentElement.classList.add('duel-loser-bg');
-                    } else if (winner === 'Joueur 2') {
-                        resultMessage = `${gameData.player2Name} gagne ce tour !`;
-                        gameMessage.style.color = '#d32f2f'; // Rouge
-                        gameMessage.style.backgroundColor = '#ffebee';
-                        player2DuelChoice.parentElement.classList.add('duel-winner-bg');
-                        player1DuelChoice.parentElement.classList.add('duel-loser-bg');
-                    } else {
-                        resultMessage = 'Égalité !';
-                        gameMessage.style.color = '#555'; // Gris
-                        gameMessage.style.backgroundColor = '#ecf0f1';
-                        player1DuelChoice.parentElement.classList.add('duel-tie-bg');
-                        player2DuelChoice.parentElement.classList.add('duel-tie-bg');
-                    }
-                    gameMessage.textContent = resultMessage;
-
-                    // Start the 5-second timer for duel display, if not already running
-                    if (duelDisplayTimeoutId === null) { // Only set timeout if not already active
-                        console.log("[UI Update] Both choices present. Starting 5-second duel display timeout.");
-                        duelDisplayTimeoutId = setTimeout(async () => {
-                            console.log("[UI Update] 5-second duel display timeout finished. Calling processEndOfRound.");
-                            await processEndOfRound(); // This will update scores, clear choices, reset turn in Firestore
-                            duelDisplayTimeoutId = null; // Clear the timeout ID after it fires
-                        }, 5000);
-                    }
-
-                } else { // One or both choices are null (new round or waiting for opponent)
-                    // Clear any pending duel display timeout if choices are reset prematurely
-                    if (duelDisplayTimeoutId !== null) {
-                        clearTimeout(duelDisplayTimeoutId);
-                        duelDisplayTimeoutId = null;
-                        console.log("[UI Update] Choices are null, cleared pending duel display timeout.");
-                    }
-
-                    duelArea.classList.add('hidden');
-                    player1DuelChoice.textContent = '?';
-                    player2DuelChoice.textContent = '?';
-                    player1DuelName.textContent = gameData.player1Name || 'Joueur 1'; // Ensure names are reset/updated
-                    player2DuelName.textContent = gameData.player2Name || 'Joueur 2';
-
-                    // Remove all background classes from duel elements
-                    player1DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
-                    player2DuelChoice.parentElement.classList.remove('duel-winner-bg', 'duel-loser-bg', 'duel-tie-bg');
-
-                    // Ensure previous choice highlight is removed for new round
-                    rockBtn.classList.remove('ring-4', 'ring-purple-400');
-                    paperBtn.classList.remove('ring-4', 'ring-purple-400');
-                    scissorsBtn.classList.remove('ring-4', 'ring-purple-400');
-
-                    if (myCurrentChoice) {
-                        console.log(`[UI Update] My choice (${myCurrentChoice}) is made. Waiting for opponent.`);
-                        disableChoiceButtons();
-                        document.getElementById(`${myCurrentChoice}-btn`).classList.add('ring-4', 'ring-purple-400');
-                        playerChoiceFeedback.textContent = `Ton choix est fait : ${choices[myCurrentChoice].name}. En attente de l'adversaire...`;
-                        gameMessage.textContent = `En attente du choix de ${opponentName}...`;
-                    } else if (opponentCurrentChoice) {
-                        console.log(`[UI Update] Opponent (${opponentName}) has chosen. It's my turn to choose.`);
-                        enableChoiceButtons();
-                        gameMessage.textContent = `Ton adversaire a fait son choix. Fais le tien !`;
-                        playerChoiceFeedback.textContent = '';
-                    } else {
-                        console.log("[UI Update] Neither has chosen. It's my turn to initiate choice.");
-                        enableChoiceButtons();
-                        gameMessage.textContent = "Fais ton choix !";
-                        playerChoiceFeedback.textContent = '';
-                    }
-                }
-
-            } else if (gameData.status === 'gameOver') {
-                console.log("[UI Update] Game status: gameOver");
-                waitingForOpponentMessage.textContent = '';
-                gameIdDisplay.classList.add('hidden');
-                disableChoiceButtons();
-                showGameOverModal(gameData.winner);
-            }
-            console.log("--- [UI Update] updateGameUI finished ---");
-        }
-
-        // Renamed playRound to processEndOfRound to clarify its role
-        async function processEndOfRound() {
-            console.log("[processEndOfRound] Function started.");
-
-            const winner = determineWinner(gameData.player1Choice, gameData.player2Choice);
-            let newPlayer1Score = gameData.player1Score;
-            let newPlayer2Score = gameData.player2Score;
-
-            if (winner === 'Joueur 1') {
-                newPlayer1Score++;
-            } else if (winner === 'Joueur 2') {
-                newPlayer2Score++;
-            }
-
-            // Determine next player's turn (even if game over, it's a logical progression)
-            const nextPlayerTurn = (gameData.currentPlayerTurn === 'player1') ? 'player2' : 'player1';
-
-            // Prepare update object for Firestore
-            const updatePayload = {
-                player1Score: newPlayer1Score,
-                player2Score: newPlayer2Score,
-                player1Choice: null, // Reset choices for next round
-                player2Choice: null,
-                currentPlayerTurn: nextPlayerTurn,
-                lastUpdated: Date.now()
-            };
-
-            // Check for game over condition
-            if (newPlayer1Score >= gameData.scoreTarget || newPlayer2Score >= gameData.scoreTarget) {
-                let finalWinner = '';
-                if (newPlayer1Score >= gameData.scoreTarget && newPlayer2Score >= gameData.scoreTarget) {
-                    finalWinner = 'Égalité';
-                } else if (newPlayer1Score >= gameData.scoreTarget) {
-                    finalWinner = gameData.player1Name;
-                } else {
-                    finalWinner = gameData.player2Name;
-                }
-                console.log(`[processEndOfRound] Game Over detected. Winner: ${finalWinner}.`);
-                updatePayload.status = 'gameOver';
-                updatePayload.winner = finalWinner;
-            } else {
-                updatePayload.status = 'playing'; // Ensure status is 'playing' if not game over
-            }
-
-            console.log("[processEndOfRound] Updating Firestore with:", updatePayload);
-            await setDoc(gameRef, updatePayload, { merge: true });
-            console.log("[processEndOfRound] Firestore update complete.");
-            // The onSnapshot listener will pick up this update and refresh the UI
-        }
-
-        // --- Player Actions (update Firestore) ---
-        async function handlePlayerChoice(choice) {
-            if (!gameRef || !localPlayerId || gameData.status !== 'playing') {
-                console.warn("[Player Action] Cannot make choice: Game not active or not your turn.");
-                gameMessage.textContent = "La partie n'est pas active ou il y a un problème."; // More generic message
-                return;
-            }
-
-            // Both players can make a choice for the current round as long as they haven't already.
-            if (gameData[localPlayerId + 'Choice'] !== null) {
-                gameMessage.textContent = "Tu as déjà fait ton choix pour ce tour.";
-                console.warn("[Player Action] Already made choice this round.");
-                return;
-            }
-
-            // Update choice in Firestore
-            const update = {};
-            update[localPlayerId + 'Choice'] = choice;
-            update.lastUpdated = Date.now();
-            console.log(`[Player Action] Player ${localPlayerId} choosing ${choice}. Updating Firestore...`);
 
             try {
-                await setDoc(gameRef, update, { merge: true });
-                playerChoiceFeedback.textContent = `Ton choix est fait : ${choices[choice].name}. En attente de l'adversaire...`;
-                disableChoiceButtons(); // Disable buttons immediately after choice
-                document.getElementById(`${choice}-btn`).classList.add('ring-4', 'ring-purple-400');
-                console.log(`[Player Action] Choice ${choice} successfully written to Firestore.`);
+                await updateDoc(gameDocRef, { ...updatesToSend, lastUpdated: new Date() });
             } catch (e) {
-                console.error("[Player Action] Error setting player choice:", e);
-                gameMessage.textContent = "Erreur lors de l'enregistrement de ton choix.";
+                console.error("Erreur lors de la mise à jour Firestore:", e);
+                gameMessageElement.textContent = "Erreur de synchronisation avec le serveur.";
             }
         }
 
-        async function interruptGame() {
-            if (gameTimeout) clearTimeout(gameTimeout); // Clear game timeout
-            if (duelDisplayTimeoutId) clearTimeout(duelDisplayTimeoutId); // NEW: Clear duel display timeout
-            duelDisplayTimeoutId = null; // Reset ID
+        /**
+         * Initialise ou réinitialise le jeu.
+         */
+        function resetGame() {
+            if (unsubscribeGameListener) {
+                unsubscribeGameListener();
+                unsubscribeGameListener = null;
+            }
+            gameData = null;
+            currentGameId = null;
+            currentPlayerNumber = null;
+            selectedShip = null;
+            currentShipOrientation = 'horizontal';
+            gameMessageElement.textContent = "";
+            replayButton.classList.add('hidden');
+            multiplayerLobby.classList.remove('hidden'); // Affiche le lobby
+            gameContainer.classList.add('hidden'); // Cache le jeu principal
+            userIdDisplay.textContent = currentUserId; // Réaffiche l'ID utilisateur
+            multiplayerInfo.textContent = "Authentifié. Crée ou rejoins une partie.";
+            gameIdInput.value = ''; // Vide l'input de l'ID de partie
+            // Réinitialise l'affichage des grilles
+            myGridElement.innerHTML = '';
+            opponentGridElement.innerHTML = '';
+        }
 
-            if (unsubscribeFromGame) {
-                unsubscribeFromGame(); // Stop listening to game changes
-                console.log("[Interrupt] Unsubscribed from game changes.");
+        /**
+         * Met à jour l'affichage du jeu en fonction de la phase actuelle et des données Firestore.
+         */
+        function updateGameDisplay() {
+            if (!gameData) {
+                gameMessageElement.textContent = "En attente des données de la partie...";
+                return;
             }
 
-            // Optionally, delete the game from Firestore if it's the creator leaving
-            if (gameRef && gameData && gameData.player1Id === userId) {
-                try {
-                    // await deleteDoc(gameRef); // Uncomment if you want to delete the game on interrupt by player1
-                    console.log("[Interrupt] Game interrupted and (optionally) deleted from Firestore.");
-                } catch (e) {
-                    console.error("[Interrupt] Error deleting game:", e);
+            // Détermine quelle grille est la nôtre et laquelle est celle de l'adversaire
+            let myPlayerGridState;
+            let myPlayerShips;
+            let opponentPlayerGridState;
+            let opponentPlayerShips;
+            let opponentId;
+
+            if (gameData.player1Id === currentUserId) {
+                myPlayerGridState = gameData.player1Grid;
+                myPlayerShips = gameData.player1Ships;
+                opponentPlayerGridState = gameData.player2Grid;
+                opponentPlayerShips = gameData.player2Ships;
+                opponentId = gameData.player2Id;
+            } else if (gameData.player2Id === currentUserId) {
+                myPlayerGridState = gameData.player2Grid;
+                myPlayerShips = gameData.player2Ships;
+                opponentPlayerGridState = gameData.player1Grid;
+                opponentPlayerShips = gameData.player1Ships;
+                opponentId = gameData.player1Id;
+            } else {
+                // Spectateur ou partie non pertinente
+                gameMessageElement.textContent = "Tu n'es pas dans cette partie. Rejoins-en une ou crée-en une nouvelle.";
+                multiplayerLobby.classList.remove('hidden');
+                gameContainer.classList.add('hidden');
+                return;
+            }
+
+            // Met à jour l'affichage de l'ID de partie
+            multiplayerInfo.textContent = `Partie ID: ${currentGameId} | Joueur ${currentPlayerNumber}`;
+
+            // Logique d'affichage basée sur le statut de la partie
+            switch (gameData.status) {
+                case 'waiting':
+                    gameMessageElement.textContent = `En attente du joueur 2... ID de la partie: ${currentGameId}`;
+                    multiplayerLobby.classList.add('hidden');
+                    gameContainer.classList.remove('hidden');
+                    placementControls.classList.add('hidden');
+                    placementControls.style.display = 'none';
+                    opponentGridSection.classList.add('hidden');
+                    simulationButtonsContainer.classList.add('hidden');
+                    replayButton.classList.add('hidden');
+                    break;
+
+                case 'placement':
+                    multiplayerLobby.classList.add('hidden');
+                    gameContainer.classList.remove('hidden');
+                    placementControls.classList.remove('hidden');
+                    placementControls.style.display = 'flex';
+                    opponentGridSection.classList.add('hidden');
+                    simulationButtonsContainer.classList.add('hidden');
+                    replayButton.classList.add('hidden');
+
+                    gameMessageElement.textContent = "Place tes bateaux sur ta grille !";
+                    createGrid(myGridElement, false, true); // Ma grille est cliquable pour le placement
+                    renderShipsList(myPlayerShips); // Utilise les bateaux du joueur actuel
+                    renderPlacedShipsOnMyGrid(myPlayerGridState, myPlayerShips); // Affiche les bateaux du joueur actuel
+                    break;
+
+                case 'playing':
+                    multiplayerLobby.classList.add('hidden');
+                    gameContainer.classList.remove('hidden');
+                    placementControls.classList.add('hidden');
+                    placementControls.style.display = 'none';
+                    opponentGridSection.classList.remove('hidden');
+                    simulationButtonsContainer.classList.add('hidden'); // Masque les boutons de simulation en multijoueur
+                    replayButton.classList.add('hidden');
+
+                    createGrid(myGridElement, false, false); // Ma grille n'est plus cliquable pour le placement
+                    createGrid(opponentGridElement, true, false); // Grille adversaire cliquable pour le tir
+
+                    renderPlacedShipsOnMyGrid(myPlayerGridState, myPlayerShips); // Affiche les bateaux du joueur actuel
+                    renderOpponentGridShots(opponentPlayerGridState); // Affiche les tirs sur la grille de l'adversaire
+
+                    if (gameData.currentPlayerTurn === currentUserId) {
+                        gameMessageElement.textContent = "C'est ton tour ! Clique sur la grille de l'adversaire pour tirer.";
+                        opponentGridElement.style.pointerEvents = 'auto'; // Active les clics sur la grille adverse
+                    } else {
+                        gameMessageElement.textContent = "C'est le tour de l'adversaire...";
+                        opponentGridElement.style.pointerEvents = 'none'; // Désactive les clics sur la grille adverse
+                    }
+                    break;
+
+                case 'finished':
+                    multiplayerLobby.classList.add('hidden');
+                    gameContainer.classList.remove('hidden');
+                    placementControls.classList.add('hidden');
+                    placementControls.style.display = 'none';
+                    opponentGridSection.classList.remove('hidden');
+                    simulationButtonsContainer.classList.add('hidden');
+                    replayButton.classList.remove('hidden');
+
+                    createGrid(myGridElement, false, false);
+                    createGrid(opponentGridElement, true, false);
+                    renderPlacedShipsOnMyGrid(myPlayerGridState, myPlayerShips);
+                    renderOpponentGridShots(opponentPlayerGridState);
+
+                    if (gameData.winner === currentUserId) {
+                        gameMessageElement.textContent = "Tu as gagné ! 🎉";
+                    } else if (gameData.winner !== null) {
+                        gameMessageElement.textContent = "Tu as perdu ! 😭";
+                    } else {
+                        gameMessageElement.textContent = "La partie est terminée.";
+                    }
+                    break;
+            }
+        }
+
+        /**
+         * Génère une grille HTML avec des cellules.
+         * @param {HTMLElement} gridElement - L'élément HTML où insérer la grille.
+         * @param {boolean} isOpponentGrid - Indique si c'est la grille de l'adversaire (cliquable pour tirer).
+         * @param {boolean} isPlacementGrid - Indique si c'est la grille de placement (cliquable pour placer des bateaux).
+         */
+        function createGrid(gridElement, isOpponentGrid, isPlacementGrid) {
+            gridElement.innerHTML = ''; // Nettoie la grille existante
+
+            // Ajout des en-têtes de colonnes (chiffres)
+            const emptyCell = document.createElement('div');
+            emptyCell.classList.add('grid-cell', 'header');
+            gridElement.appendChild(emptyCell); // Cellule vide en haut à gauche
+
+            for (let i = 1; i <= gridSize; i++) {
+                const headerCell = document.createElement('div');
+                headerCell.classList.add('grid-cell', 'header');
+                headerCell.textContent = i;
+                gridElement.appendChild(headerCell);
+            }
+
+            // Ajout des en-têtes de lignes (lettres) et des cellules de jeu
+            for (let i = 0; i < gridSize; i++) {
+                const headerCell = document.createElement('div');
+                headerCell.classList.add('grid-cell', 'header');
+                headerCell.textContent = alphabet[i];
+                gridElement.appendChild(headerCell); // En-tête de ligne
+
+                for (let j = 0; j < gridSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('grid-cell');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.id = `${isOpponentGrid ? 'opp' : 'my'}-${alphabet[i]}${j + 1}`; // ID unique pour chaque cellule
+
+                    if (isOpponentGrid && !isPlacementGrid && gameData.currentPlayerTurn === currentUserId && gameData.status === 'playing') {
+                        cell.addEventListener('click', () => handleCellClick(cell, i, j));
+                    } else if (!isOpponentGrid && isPlacementGrid && gameData.status === 'placement') {
+                        cell.addEventListener('click', () => handlePlacementClick(cell, i, j));
+                        cell.addEventListener('mouseenter', () => handlePlacementHover(cell, i, j, true));
+                        cell.addEventListener('mouseleave', () => handlePlacementHover(cell, i, j, false));
+                    }
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+
+        /**
+         * Affiche la liste des bateaux à placer.
+         * @param {Array<object>} currentShips - La liste des bateaux du joueur actuel.
+         */
+        function renderShipsList(currentShips) {
+            shipsListElement.innerHTML = '';
+            currentShips.forEach(ship => {
+                const shipDiv = document.createElement('div');
+                shipDiv.classList.add('ship-to-place', 'rounded-lg', 'shadow-md');
+                shipDiv.textContent = `${ship.name} (${ship.length} cases)`;
+                shipDiv.dataset.shipId = ship.id;
+
+                if (ship.placed) {
+                    shipDiv.style.backgroundColor = ship.color; // Applique la couleur du bateau
+                    shipDiv.style.opacity = '0.9'; // Maintient l'opacité
+                    shipDiv.style.cursor = 'default'; // Rendre non cliquable visuellement
+                } else {
+                    shipDiv.style.backgroundColor = 'var(--color-steel-gray)'; // Couleur par défaut pour non placé
+                    shipDiv.style.cursor = 'pointer'; // Rendre cliquable
+                }
+                
+                // Ajoute l'écouteur d'événement seulement si en phase de placement
+                if (gameData.status === 'placement' && !ship.placed) { // Ne peut sélectionner que les bateaux non encore placés
+                    shipDiv.addEventListener('click', () => selectShipForPlacement(ship));
+                }
+                
+                if (selectedShip !== null && selectedShip.id === ship.id) {
+                    shipDiv.classList.add('selected');
+                }
+                shipsListElement.appendChild(shipDiv);
+            });
+            checkAllShipsPlaced(currentShips);
+        }
+
+        /**
+         * Sélectionne un bateau pour le placement.
+         * @param {object} ship - L'objet bateau à sélectionner.
+         */
+        function selectShipForPlacement(ship) {
+            if (gameData.status !== 'placement') return;
+            // Ne permet pas de sélectionner un bateau déjà placé
+            if (ship.placed) {
+                gameMessageElement.textContent = `Le ${ship.name} est déjà placé !`;
+                return;
+            }
+
+            // Si le bateau est déjà sélectionné, le désélectionne
+            if (selectedShip && selectedShip.id === ship.id) {
+                const prevSelectedDiv = shipsListElement.querySelector(`[data-ship-id="${selectedShip.id}"]`);
+                if (prevSelectedDiv) {
+                    prevSelectedDiv.classList.remove('selected');
+                }
+                selectedShip = null;
+                gameMessageElement.textContent = "Bateau désélectionné. Sélectionne un bateau à placer.";
+                removeShipPreview(); // Supprime l'aperçu
+                return;
+            }
+
+            // Désélectionne le bateau précédent s'il y en avait un
+            if (selectedShip) {
+                const prevSelectedDiv = shipsListElement.querySelector(`[data-ship-id="${selectedShip.id}"]`);
+                if (prevSelectedDiv) {
+                    prevSelectedDiv.classList.remove('selected');
                 }
             }
 
-            // Reset local state
-            localPlayerId = null;
-            gameData = null;
-            gameRef = null;
-            // Reset UI
-            resetRoundUI(); // Calls functions that are now defined
-            hideGameOverModal();
-            playerNameInput.value = ''; // Clear player name input
-            gameIdInput.value = ''; // Clear game ID input
-            gameIdDisplay.classList.add('hidden'); // Hide game ID display
-            waitingForOpponentMessage.textContent = '';
-            enableSettingsInputs(); // Re-enable all settings inputs and buttons
-            scoreTarget = 3; // Reset score target locally
-            updateScoreTargetDisplay(); // Update display with reset score target
-            showPage('settings-page');
-            gameMessage.textContent = "Partie interrompue. Crée ou rejoins une nouvelle partie.";
-            console.log("[Interrupt] Game state reset and returned to settings page.");
+            selectedShip = ship;
+            currentShipOrientation = 'horizontal'; // Réinitialise l'orientation à chaque sélection
+
+            // Sélectionne le nouveau bateau
+            const newSelectedDiv = shipsListElement.querySelector(`[data-ship-id="${ship.id}"]`);
+            if (newSelectedDiv) {
+                newSelectedDiv.classList.add('selected');
+            }
+            gameMessageElement.textContent = `Bateau sélectionné : ${ship.name}. Clique sur ta grille pour le placer.`;
+            renderShipsList(currentPlayerNumber === 1 ? gameData.player1Ships : gameData.player2Ships);
+        }
+
+        /**
+         * Gère le clic sur une cellule de la grille du joueur pour placer un bateau.
+         * @param {HTMLElement} cell - La cellule cliquée.
+         * @param {number} row - L'indice de la ligne.
+         * @param {number} col - L'indice de la colonne.
+         */
+        async function handlePlacementClick(cell, row, col) {
+            if (gameData.status !== 'placement') return;
+            if (!selectedShip) {
+                gameMessageElement.textContent = "Sélectionne d'abord un bateau dans la liste !";
+                return;
+            }
+
+            const currentPlayerShips = currentPlayerNumber === 1 ? gameData.player1Ships : gameData.player2Ships;
+            const currentPlayerGrid = currentPlayerNumber === 1 ? gameData.player1Grid : gameData.player2Grid;
+
+            // Vérifie si le placement est valide
+            const placementValid = checkPlacementValidity(row, col, selectedShip.length, currentShipOrientation, currentPlayerGrid);
+
+            if (placementValid) {
+                const newShipPosition = getShipCells(row, col, selectedShip.length, currentShipOrientation);
+                const updatedShips = currentPlayerShips.map(s => 
+                    s.id === selectedShip.id ? { ...s, placed: true, position: newShipPosition } : s
+                );
+                
+                // Mettre à jour la grille locale pour l'aperçu avant l'envoi à Firestore
+                let newGridState = JSON.parse(JSON.stringify(currentPlayerGrid));
+                newShipPosition.forEach(p => {
+                    newGridState[p.row][p.col] = 1; // Marque la cellule comme contenant un bateau
+                });
+
+                // Mettre à jour Firestore
+                const updates = {};
+                if (currentPlayerNumber === 1) {
+                    updates.player1Ships = updatedShips;
+                    updates.player1Grid = newGridState;
+                } else {
+                    updates.player2Ships = updatedShips;
+                    updates.player2Grid = newGridState;
+                }
+                await updateGameInFirestore(updates);
+
+                selectedShip = null; // Désélectionne le bateau
+                gameMessageElement.textContent = `"${selectedShip?.name || 'Bateau'}" placé !`; // Message mis à jour par le listener
+            } else {
+                gameMessageElement.textContent = "Placement invalide : chevauchement ou hors grille !";
+            }
+            removeShipPreview();
+        }
+
+        /**
+         * Affiche un aperçu du bateau lors du survol de la grille.
+         * @param {HTMLElement} cell - La cellule survolée.
+         * @param {number} row - L'indice de la ligne.
+         * @param {number} col - L'indice de la colonne.
+         * @param {boolean} isEntering - Vrai si le curseur entre, faux s'il sort.
+         */
+        function handlePlacementHover(cell, row, col, isEntering) {
+            if (gameData.status !== 'placement') return;
+            if (!selectedShip) return;
+
+            removeShipPreview(); // Toujours supprimer l'ancien aperçu
+
+            if (isEntering) {
+                const currentPlayerGrid = currentPlayerNumber === 1 ? gameData.player1Grid : gameData.player2Grid;
+                const previewCells = getShipCells(row, col, selectedShip.length, currentShipOrientation);
+                const placementValid = checkPlacementValidity(row, col, selectedShip.length, currentShipOrientation, currentPlayerGrid);
+
+                previewCells.forEach(pCell => {
+                    const targetCell = document.getElementById(`my-${alphabet[pCell.row]}${pCell.col + 1}`);
+                    if (targetCell) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.classList.add('ship-preview');
+                        if (!placementValid) {
+                            previewDiv.classList.add('invalid-placement');
+                        }
+                        targetCell.appendChild(previewDiv);
+                    }
+                });
+            }
+        }
+
+        /**
+         * Supprime tous les aperçus de bateau de la grille.
+         */
+        function removeShipPreview() {
+            document.querySelectorAll('.ship-preview').forEach(preview => preview.remove());
+        }
+
+        /**
+         * Vérifie si le placement d'un bateau est valide.
+         * @param {number} startRow - Ligne de départ.
+         * @param {number} startCol - Colonne de départ.
+         * @param {number} length - Longueur du bateau.
+         * @param {string} orientation - Orientation ('horizontal' ou 'vertical').
+         * @param {Array<Array<number>>} gridState - L'état de la grille à vérifier.
+         * @returns {boolean} Vrai si le placement est valide.
+         */
+        function checkPlacementValidity(startRow, startCol, length, orientation, gridState) {
+            const cellsToCheck = getShipCells(startRow, startCol, length, orientation);
+
+            for (const cellPos of cellsToCheck) {
+                // Vérifie si hors grille
+                if (cellPos.row < 0 || cellPos.row >= gridSize || cellPos.col < 0 || cellPos.col >= gridSize) {
+                    return false;
+                }
+                // Vérifie si la case est déjà occupée par un bateau
+                if (gridState[cellPos.row][cellPos.col] === 1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Retourne les coordonnées des cellules qu'occuperait un bateau.
+         * @param {number} startRow - Ligne de départ.
+         * @param {number} startCol - Colonne de départ.
+         * @param {number} length - Longueur du bateau.
+         * @param {string} orientation - Orientation ('horizontal' ou 'vertical').
+         * @returns {Array<object>} Tableau d'objets {row, col}.
+         */
+        function getShipCells(startRow, startCol, length, orientation) {
+            const cells = [];
+            for (let i = 0; i < length; i++) {
+                let currentRow = startRow;
+                let currentCol = startCol;
+                if (orientation === 'horizontal') {
+                    currentCol += i;
+                } else {
+                    currentRow += i;
+                }
+                cells.push({ row: currentRow, col: currentCol });
+            }
+            return cells;
+        }
+
+        /**
+         * Fait pivoter l'orientation du bateau sélectionné.
+         */
+        rotateShipButton.addEventListener('click', () => {
+            if (selectedShip && gameData.status === 'placement') {
+                currentShipOrientation = (currentShipOrientation === 'horizontal') ? 'vertical' : 'horizontal';
+                gameMessageElement.textContent = `Orientation : ${currentShipOrientation === 'horizontal' ? 'Horizontale' : 'Verticale'}`;
+                // Mettre à jour l'aperçu si le curseur est sur la grille
+                const activeCell = document.querySelector('.grid-cell:hover');
+                if (activeCell && activeCell.id.startsWith('my-')) {
+                    const row = parseInt(activeCell.dataset.row);
+                    const col = parseInt(activeCell.dataset.col);
+                    handlePlacementHover(activeCell, row, col, true);
+                }
+            } else if (gameData.status !== 'placement') {
+                gameMessageElement.textContent = "La rotation n'est possible qu'en phase de placement !";
+            } else {
+                gameMessageElement.textContent = "Sélectionne un bateau à faire pivoter !";
+            }
+        });
+
+        /**
+         * Vérifie si tous les bateaux ont été placés et active le bouton de validation.
+         * @param {Array<object>} currentShips - La liste des bateaux du joueur actuel.
+         */
+        function checkAllShipsPlaced(currentShips) {
+            const allPlaced = currentShips.every(ship => ship.placed);
+            validatePlacementButton.disabled = !allPlaced;
+            if (allPlaced) {
+                gameMessageElement.textContent = "Tous les bateaux sont placés ! Clique sur 'Valider mon placement'.";
+            } else {
+                gameMessageElement.textContent = "Place tes bateaux sur ta grille !"; // Message par défaut si tous ne sont pas placés
+            }
+        }
+
+        /**
+         * Gère le clic sur le bouton de validation du placement.
+         */
+        validatePlacementButton.addEventListener('click', async () => {
+            const currentPlayerShips = currentPlayerNumber === 1 ? gameData.player1Ships : gameData.player2Ships;
+            if (currentPlayerShips.every(ship => ship.placed)) {
+                // Marquer le joueur comme ayant terminé son placement
+                const updates = {};
+                if (currentPlayerNumber === 1) {
+                    updates.player1PlacementDone = true;
+                } else {
+                    updates.player2PlacementDone = true;
+                }
+                await updateGameInFirestore(updates);
+
+                // Vérifier si les deux joueurs ont terminé leur placement
+                const updatedGameData = (await getDoc(doc(db, `artifacts/${appId}/public/data/battleship_games`, currentGameId))).data();
+                // Désérialiser les données pour la vérification
+                updatedGameData.player1Ships = JSON.parse(updatedGameData.player1Ships);
+                updatedGameData.player2Ships = JSON.parse(updatedGameData.player2Ships);
+
+
+                if (updatedGameData.player1PlacementDone && updatedGameData.player2PlacementDone) {
+                    // Si les deux joueurs ont fini, passer à la phase de jeu
+                    await updateGameInFirestore({ status: 'playing', currentPlayerTurn: updatedGameData.player1Id }); // Player 1 commence
+                } else {
+                    gameMessageElement.textContent = "Placement validé ! En attente de l'autre joueur...";
+                }
+            } else {
+                gameMessageElement.textContent = "Tu dois placer tous tes bateaux avant de valider !";
+            }
+        });
+
+
+        /**
+         * Re-rend les bateaux placés sur ma grille après un changement de phase.
+         * @param {Array<Array<number>>} myGridState - L'état de la grille du joueur.
+         * @param {Array<object>} myShips - Les bateaux du joueur.
+         */
+        function renderPlacedShipsOnMyGrid(myGridState, myShips) {
+            // Nettoie tous les éléments de bateau existants sur la grille
+            myGridElement.querySelectorAll('.ship').forEach(shipDiv => shipDiv.remove());
+
+            myShips.forEach(ship => {
+                if (ship.placed && ship.position && ship.position.length > 0) {
+                    ship.position.forEach(cellPos => {
+                        const cellElement = document.getElementById(`my-${alphabet[cellPos.row]}${cellPos.col + 1}`);
+                        if (cellElement) {
+                            const shipDiv = document.createElement('div');
+                            shipDiv.classList.add('ship');
+                            shipDiv.dataset.shipId = ship.id;
+                            if (ship.color) {
+                                shipDiv.style.backgroundColor = ship.color;
+                            }
+                            cellElement.appendChild(shipDiv);
+                        }
+                    });
+                }
+            });
+
+            // Affiche les tirs sur ma grille (ceux de l'adversaire)
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const cell = document.getElementById(`my-${alphabet[i]}${j + 1}`);
+                    const existingMarker = cell.querySelector('.emoji-marker');
+                    if (existingMarker) {
+                        existingMarker.remove();
+                    }
+                    // 2 = touché par l'adversaire, 3 = manqué par l'adversaire
+                    if (myGridState[i][j] === 2) { 
+                        const marker = document.createElement('span');
+                        marker.classList.add('emoji-marker');
+                        marker.textContent = '🔥';
+                        cell.appendChild(marker);
+                    } else if (myGridState[i][j] === 3) { 
+                        const marker = document.createElement('span');
+                        marker.classList.add('emoji-marker');
+                        marker.textContent = '💦';
+                        cell.appendChild(marker);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Affiche les tirs (touchés/manqués) sur la grille de l'adversaire (celle que le joueur a tirée).
+         * @param {Array<Array<number>>} opponentGridState - L'état de la grille de l'adversaire.
+         */
+        function renderOpponentGridShots(opponentGridState) {
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const cell = document.getElementById(`opp-${alphabet[i]}${j + 1}`);
+                    // Supprime les marqueurs existants avant de les recréer
+                    const existingMarker = cell.querySelector('.emoji-marker');
+                    if (existingMarker) {
+                        existingMarker.remove();
+                    }
+
+                    if (opponentGridState[i][j] === 2) { // 2 = touché par le joueur sur la grille de l'adversaire
+                        const marker = document.createElement('span');
+                        marker.classList.add('emoji-marker');
+                        marker.textContent = '🔥';
+                        cell.appendChild(marker);
+                    } else if (opponentGridState[i][j] === 3) { // 3 = manqué par le joueur sur la grille de l'adversaire
+                        const marker = document.createElement('span');
+                        marker.classList.add('emoji-marker');
+                        marker.textContent = '💦';
+                        cell.appendChild(marker);
+                    }
+                }
+            }
         }
 
 
-        // --- Event Listeners ---
-        // Attaching both click and touchstart listeners for robustness on mobile
-        scoreTargetMinusBtn.addEventListener('click', () => { if (scoreTarget > 1) { scoreTarget--; updateScoreTargetDisplay(); } });
-        scoreTargetMinusBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (scoreTarget > 1) { scoreTarget--; updateScoreTargetDisplay(); } });
-
-        scoreTargetPlusBtn.addEventListener('click', () => { scoreTarget++; updateScoreTargetDisplay(); });
-        scoreTargetPlusBtn.addEventListener('touchstart', (e) => { e.preventDefault(); scoreTarget++; updateScoreTargetDisplay(); });
-
-        createGameBtn.addEventListener('click', createGame);
-        createGameBtn.addEventListener('touchstart', (e) => { e.preventDefault(); createGame(); });
-
-        joinGameBtn.addEventListener('click', joinGame);
-        joinGameBtn.addEventListener('touchstart', (e) => { e.preventDefault(); joinGame(); });
-
-        copyGameIdBtn.addEventListener('click', () => {
-            const gameId = currentGameIdSpan.textContent;
-            // Using document.execCommand('copy') for better compatibility in iframes
-            const tempInput = document.createElement('textarea');
-            tempInput.value = gameId;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            alert('ID de partie copié !'); // Consider replacing with a custom modal/toast
-            document.body.removeChild(tempInput); // Remove after copy
-        });
-        copyGameIdBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const gameId = currentGameIdSpan.textContent;
-            const tempInput = document.createElement('textarea');
-            tempInput.value = gameId;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            alert('ID de partie copié !');
-            document.body.removeChild(tempInput);
-        });
-
-
-        rockBtn.addEventListener('click', () => handlePlayerChoice('rock'));
-        rockBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePlayerChoice('rock'); });
-
-        paperBtn.addEventListener('click', () => handlePlayerChoice('paper'));
-        paperBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePlayerChoice('paper'); });
-
-        scissorsBtn.addEventListener('click', () => handlePlayerChoice('scissors'));
-        scissorsBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePlayerChoice('scissors'); });
-
-        replayBtn.addEventListener('click', () => {
-            hideGameOverModal();
-            // Reset game state in Firestore for a new game
-            if (gameRef && gameData) {
-                setDoc(gameRef, {
-                    player1Score: 0,
-                    player2Score: 0,
-                    player1Choice: null,
-                    player2Choice: null,
-                    status: 'playing',
-                    currentPlayerTurn: 'player1',
-                    winner: null,
-                    lastUpdated: Date.now()
-                }, { merge: true }).then(() => {
-                    console.log("[Replay] Game reset in Firestore.");
-                }).catch(e => {
-                    console.error("[Replay] Error resetting game in Firestore:", e);
-                });
+        /**
+         * Gère le clic sur une cellule de la grille de l'adversaire (phase de jeu).
+         * @param {HTMLElement} cell - L'élément de la cellule cliquée.
+         * @param {number} row - L'indice de la ligne.
+         * @param {number} col - L'indice de la colonne.
+         */
+        async function handleCellClick(cell, row, col) {
+            if (gameData.status !== 'playing' || gameData.currentPlayerTurn !== currentUserId) {
+                gameMessageElement.textContent = "Ce n'est pas ton tour !";
+                return;
             }
-            // Clear any pending duel display timeout on replay
-            if (duelDisplayTimeoutId) {
-                clearTimeout(duelDisplayTimeoutId);
-                duelDisplayTimeoutId = null;
-            }
-            // UI will update via onSnapshot
-        });
-        replayBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            hideGameOverModal();
-            if (gameRef && gameData) {
-                setDoc(gameRef, {
-                    player1Score: 0,
-                    player2Score: 0,
-                    player1Choice: null,
-                    player2Choice: null,
-                    status: 'playing',
-                    currentPlayerTurn: 'player1',
-                    winner: null,
-                    lastUpdated: Date.now()
-                }, { merge: true }).then(() => {
-                    console.log("[Replay] Game reset in Firestore.");
-                }).catch(e => {
-                    console.error("[Replay] Error resetting game in Firestore:", e);
-                });
-            }
-            if (duelDisplayTimeoutId) {
-                clearTimeout(duelDisplayTimeoutId);
-                duelDisplayTimeoutId = null;
-            }
-        });
 
-
-        interruptGameBtn.addEventListener('click', interruptGame);
-        interruptGameBtn.addEventListener('touchstart', (e) => { e.preventDefault(); interruptGame(); });
-
-        // Initialisation : Appeler initializeFirebase au chargement de la fenêtre
-        // Le reste de l'initialisation UI se fera via onAuthStateChanged
-        window.onload = async () => {
-            // Afficher la version de l'application
-            document.getElementById('app-version').textContent = APP_VERSION;
-
-            // Les inputs et boutons sont par défaut actifs en HTML.
-            // enableSettingsInputs() sera appelée par onAuthStateChanged une fois Firebase prêt.
-            playerNameInput.value = '';
-            gameIdInput.value = '';
-            updateScoreTargetDisplay();
-            updateGameInfo();
-            showPage('settings-page');
+            // Détermine quelle grille de l'adversaire est ciblée et l'état de ses bateaux
+            let targetPlayerGridKey = (currentPlayerNumber === 1) ? 'player2Grid' : 'player1Grid';
+            let targetPlayerShipsKey = (currentPlayerNumber === 1) ? 'player2Ships' : 'player1Ships';
             
-            // Display initial message while Firebase loads
-            firebaseStatusMessage.textContent = "Initialisation de Firebase...";
-            firebaseStatusMessage.style.backgroundColor = '#fff3cd'; // Light yellow
-            firebaseStatusMessage.style.color = '#856404'; // Dark yellow
+            let targetPlayerGrid = gameData[targetPlayerGridKey];
+            let targetPlayerShips = gameData[targetPlayerShipsKey];
 
-            await initializeFirebase();
+            // Empêche de tirer sur une case déjà tirée
+            if (targetPlayerGrid[row][col] === 2 || targetPlayerGrid[row][col] === 3) {
+                gameMessageElement.textContent = "Vous avez déjà tiré ici !";
+                return;
+            }
+
+            // Vérifie si le tir touche un bateau de l'adversaire
+            const hitShipIndex = targetPlayerShips.findIndex(ship => 
+                ship.position.some(p => p.row === row && p.col === col)
+            );
+
+            const updates = {};
+            let newGridState = JSON.parse(JSON.stringify(targetPlayerGrid));
+            let newShipsState = JSON.parse(JSON.stringify(targetPlayerShips));
+
+            if (hitShipIndex !== -1) {
+                // Touché
+                newGridState[row][col] = 2; // Marque comme touché
+                newShipsState[hitShipIndex].hits++;
+                
+                // Vérifie si le bateau est coulé
+                if (newShipsState[hitShipIndex].hits === newShipsState[hitShipIndex].length) {
+                    newShipsState[hitShipIndex].sunk = true;
+                    gameMessageElement.textContent = `Touché ! Tu as coulé le ${newShipsState[hitShipIndex].name} de l'adversaire !`;
+                } else {
+                    gameMessageElement.textContent = `Touché ! Tu as touché un ${newShipsState[hitShipIndex].name} !`;
+                }
+            } else {
+                // Manqué
+                newGridState[row][col] = 3; // Marque comme manqué
+                gameMessageElement.textContent = "Dans l'eau ! 💧";
+            }
+
+            updates[targetPlayerGridKey] = newGridState;
+            updates[targetPlayerShipsKey] = newShipsState;
+            
+            // Vérifie la fin de partie
+            const opponentShipsSunk = newShipsState.every(ship => ship.sunk);
+            if (opponentShipsSunk) {
+                updates.status = 'finished';
+                updates.winner = currentUserId;
+                gameMessageElement.textContent = "Tous les bateaux de l'adversaire sont coulés ! Tu as gagné ! 🎉";
+            } else {
+                // Passe le tour à l'autre joueur
+                updates.currentPlayerTurn = (gameData.player1Id === currentUserId) ? gameData.player2Id : gameData.player1Id;
+            }
+            
+            await updateGameInFirestore(updates);
+        }
+
+        // Événements pour les boutons de simulation (maintenant inutiles en multijoueur)
+        simulateHitButton.addEventListener('click', () => {
+            gameMessageElement.textContent = "Les boutons de simulation sont désactivés en mode multijoueur.";
+        });
+
+        simulateMissButton.addEventListener('click', () => {
+            gameMessageElement.textContent = "Les boutons de simulation sont désactivés en mode multijoueur.";
+        });
+
+        // Événement pour le bouton Rejouer
+        replayButton.addEventListener('click', resetGame);
+
+        // Initialisation au chargement de la page
+        window.onload = function() {
+            // Le lobby multijoueur est affiché par défaut
+            multiplayerLobby.classList.remove('hidden');
+            gameContainer.classList.add('hidden'); // Le jeu principal est caché
+            placementControls.classList.add('hidden'); // Les contrôles de placement sont cachés
         };
-
     </script>
 </body>
 </html>
